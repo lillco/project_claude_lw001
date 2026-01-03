@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+.Python
+env/
+.venv/
+.vscode/
+*.egg-info/
