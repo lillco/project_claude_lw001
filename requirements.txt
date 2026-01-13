@@ -1,2 +1,5 @@
 # Add project dependencies here
 anthropic
+pydantic
+flask
+flask-cors
