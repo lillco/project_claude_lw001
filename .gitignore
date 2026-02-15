@@ -1,8 +1,29 @@
-# Python
-__pycache__/
-*.pyc
-.Python
-env/
-.venv/
-.vscode/
-*.egg-info/
+# Claude temporary files
+tmpclaude-*
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Database
+src/db/config.js
+api/config.php
+data/*.db
+data/*.db-shm
+data/*.db-wal
+*.sql

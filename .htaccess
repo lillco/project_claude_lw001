@@ -1,0 +1,23 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Set the base directory for subdirectory deployment
+RewriteBase /association/
+
+# Redirect root to index.html
+RewriteRule ^$ index.html [L]
+
+# If the request is for an existing file or directory, serve it directly
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route API requests to the api folder
+RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# For SPA routing - route all other requests to index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.html [L]
+
+# Prevent directory listing
+Options -Indexes
