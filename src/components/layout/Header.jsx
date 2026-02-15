@@ -1,5 +1,5 @@
 import React from 'react'
-import { LogOut, User, Shield } from 'lucide-react'
+import { LogOut, User, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 
 function Header() {
@@ -19,17 +19,15 @@ function Header() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Admin Link - only visible for admins */}
-            {user?.is_admin === 1 && (
-              <a
-                href="/admin.html"
-                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors"
-                title="Benutzerverwaltung"
-              >
-                <Shield className="w-4 h-4" />
-                <span className="text-sm font-medium">Admin</span>
-              </a>
-            )}
+            {/* Back to Launchpad Link */}
+            <a
+              href="/"
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded transition-colors"
+              title="Zurück zum Launchpad"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm font-medium">Zurück zum Launchpad</span>
+            </a>
 
             {/* User Info and Logout */}
             <div className="flex items-center gap-3 bg-white/10 px-4 py-2 rounded">
