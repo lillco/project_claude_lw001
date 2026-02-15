@@ -1,0 +1,54 @@
+name: Deploy Vereinsverwaltung to Netcup
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Debug folder structure
+        run: |
+          pwd
+          ls -la
+          echo "--- dist folder ---"
+          ls -la dist/
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y lftp
+
+      - name: Deploy via FTPS (lftp)
+        run: |
+          lftp -u "${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }}" ftp://${{ secrets.FTP_HOST }} \
+            -e "
+              set ftp:ssl-force true;
+              set ftp:ssl-protect-data true;
+              set ftp:ssl-protect-list true;
+              set ssl:verify-certificate no;
+              set net:timeout 20;
+              set net:max-retries 3;
+              set cmd:fail-exit yes;
+              mirror -R --delete --verbose --exclude api/config.php dist/ association/;
+              bye
+            "
