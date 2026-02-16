@@ -18,17 +18,10 @@
  */
 
 return [
-    'database' => [
-        'host' => 'localhost',           // MySQL host (e.g., 'localhost', '192.168.1.100', 'db.example.com')
-        'port' => 3306,                  // MySQL port (default: 3306)
-        'name' => 'lebendiges_weinheim', // Database name (shared across all modules!)
-        'user' => 'your_username',       // Your MySQL username
-        'password' => 'your_password',   // Your MySQL password
-        'charset' => 'utf8mb4'           // Character set
-    ],
-    'cors' => [
-        'allowed_origins' => ['*'],      // Allowed origins for CORS (* = all, or specific domains)
-        'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        'allowed_headers' => ['Content-Type', 'Authorization']
-    ]
+    'host' => 'localhost',           // MySQL host (e.g., 'localhost', '192.168.1.100', 'db.example.com')
+    'port' => 3306,                  // MySQL port (default: 3306)
+    'database' => 'lebendiges_weinheim', // Database name (shared across all modules!)
+    'user' => 'your_username',       // Your MySQL username
+    'password' => 'your_password',   // Your MySQL password
+    'charset' => 'utf8mb4'           // Character set
 ];
