@@ -1,23 +1,57 @@
 <?php
 /**
  * Database Class for MySQL operations
+ * Handles connection and CRUD operations
  */
 
 class Database {
-    private $conn;
+    private $conn = null;
+    private $config;
 
-    public function __construct($config) {
-        $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset=utf8mb4";
+    public function __construct() {
+        $configFile = __DIR__ . '/config.php';
         
+        if (!file_exists($configFile)) {
+            throw new Exception(
+                'Database configuration file not found. ' .
+                'Please create api/config.php from api/config.example.php and add your database credentials.'
+            );
+        }
+        
+        $this->config = require $configFile;
+        $this->connect();
+    }
+
+    /**
+     * Establish database connection
+     */
+    private function connect() {
         try {
-            $this->conn = new PDO($dsn, $config['user'], $config['password']);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $dbConfig = $this->config['database'];
+            
+            $dsn = sprintf(
+                'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+                $dbConfig['host'],
+                $dbConfig['port'],
+                $dbConfig['name'],
+                $dbConfig['charset']
+            );
+
+            $this->conn = new PDO(
+                $dsn,
+                $dbConfig['user'],
+                $dbConfig['password'],
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
+            );
             
             // Create tables if they don't exist
             $this->createTables();
         } catch (PDOException $e) {
-            throw new Exception("Database connection failed: " . $e->getMessage());
+            throw new Exception('Database connection failed: ' . $e->getMessage());
         }
     }
 
@@ -100,5 +134,12 @@ class Database {
         $stmt = $this->conn->prepare("DELETE FROM {$table} WHERE id = ?");
         $stmt->execute([$id]);
         return ['id' => $id];
+    }
+
+    /**
+     * Close database connection
+     */
+    public function closeConnection() {
+        $this->conn = null;
     }
 }

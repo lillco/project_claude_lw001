@@ -16,10 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once 'Database.php';
-require_once 'config.php';
 
-// Initialize database
-$db = new Database($config);
+// Initialize database (Database class loads config.php internally)
+$db = new Database();
 
 // Parse request
 $method = $_SERVER['REQUEST_METHOD'];
