@@ -64,11 +64,31 @@ class DatabaseLayer {
         CREATE TABLE IF NOT EXISTS association (
           id VARCHAR(50) PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
+          description TEXT,
+          logo VARCHAR(500),
           street VARCHAR(255),
           zip VARCHAR(10),
           city VARCHAR(255),
-          description TEXT,
+          contact_person VARCHAR(255),
+          phone VARCHAR(50),
+          facebook VARCHAR(500),
+          instagram VARCHAR(500),
+          website VARCHAR(500),
+          email VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `,
+      association_sepa: `
+        CREATE TABLE IF NOT EXISTS association_sepa (
+          id VARCHAR(50) PRIMARY KEY,
+          association_id VARCHAR(50),
+          bank_name VARCHAR(255),
+          iban VARCHAR(50),
+          bic VARCHAR(20),
+          is_public BOOLEAN DEFAULT 0,
+          usage_purpose VARCHAR(255),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (association_id) REFERENCES association(id) ON DELETE CASCADE
         )
       `
     }

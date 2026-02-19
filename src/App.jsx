@@ -130,38 +130,136 @@ function App() {
             <div>
               {association ? (
                 // Display association data
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Name
-                      </label>
-                      <p className="text-lg text-gray-900">{association.name}</p>
+                <div className="space-y-6">
+                  {/* Firmierung */}
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Firmierung</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {association.logo && (
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-500 mb-2">
+                            Logo
+                          </label>
+                          <img 
+                            src={association.logo} 
+                            alt="Vereinslogo" 
+                            className="w-32 h-32 object-contain border border-gray-300 rounded"
+                          />
+                        </div>
+                      )}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Name
+                        </label>
+                        <p className="text-lg text-gray-900">{association.name}</p>
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Beschreibung
+                        </label>
+                        <p className="text-lg text-gray-900 whitespace-pre-wrap">{association.description || '-'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Straße
-                      </label>
-                      <p className="text-lg text-gray-900">{association.street || '-'}</p>
+                  </div>
+
+                  {/* Geschäftsstelle */}
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Geschäftsstelle</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Straße
+                        </label>
+                        <p className="text-lg text-gray-900">{association.street || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          PLZ
+                        </label>
+                        <p className="text-lg text-gray-900">{association.zip || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Ort
+                        </label>
+                        <p className="text-lg text-gray-900">{association.city || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Ansprechpartner
+                        </label>
+                        <p className="text-lg text-gray-900">{association.contact_person || '-'}</p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Telefonnummer
+                        </label>
+                        <p className="text-lg text-gray-900">{association.phone || '-'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        PLZ
-                      </label>
-                      <p className="text-lg text-gray-900">{association.zip || '-'}</p>
+                  </div>
+
+                  {/* Web & Social Media */}
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Web & Social Media</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Website
+                        </label>
+                        {association.website ? (
+                          <a href={association.website} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                            {association.website}
+                          </a>
+                        ) : (
+                          <p className="text-lg text-gray-900">-</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          E-Mail
+                        </label>
+                        {association.email ? (
+                          <a href={`mailto:${association.email}`} className="text-lg text-blue-600 hover:underline">
+                            {association.email}
+                          </a>
+                        ) : (
+                          <p className="text-lg text-gray-900">-</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Facebook
+                        </label>
+                        {association.facebook ? (
+                          <a href={association.facebook} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                            {association.facebook}
+                          </a>
+                        ) : (
+                          <p className="text-lg text-gray-900">-</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                          Instagram
+                        </label>
+                        {association.instagram ? (
+                          <a href={association.instagram} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                            {association.instagram}
+                          </a>
+                        ) : (
+                          <p className="text-lg text-gray-900">-</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Stadt
-                      </label>
-                      <p className="text-lg text-gray-900">{association.city || '-'}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Beschreibung
-                      </label>
-                      <p className="text-lg text-gray-900 whitespace-pre-wrap">{association.description || '-'}</p>
-                    </div>
+                  </div>
+
+                  {/* Bankverbindung */}
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Bankverbindung</h3>
+                    <p className="text-sm text-gray-500 mb-4">
+                      SEPA-Konten werden hier angezeigt (noch nicht implementiert)
+                    </p>
                   </div>
                 </div>
               ) : (
