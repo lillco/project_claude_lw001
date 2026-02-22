@@ -45,12 +45,25 @@ try {
             exit();
         }
 
+        // Separate SEPA accounts from association data
+        $sepaAccounts = $input['sepaAccounts'] ?? null;
+        unset($input['sepaAccounts']);
+        
+        // Only allow known association columns
+        $allowedFields = ['name', 'description', 'logo', 'street', 'zip', 'city', 
+                          'contact_person', 'phone', 'facebook', 'instagram', 'website', 'email'];
+        $input = array_intersect_key($input, array_flip($allowedFields));
+
         // Add ID and timestamp
         $data = array_merge([
             'id' => (string)time() . rand(100, 999),
         ], $input);
 
         $result = $db->insert('association', $data);
+        
+        // TODO: Handle SEPA accounts if provided
+        // if ($sepaAccounts) { ... }
+        
         http_response_code(201);
         echo json_encode($result);
         exit();
@@ -66,7 +79,20 @@ try {
             exit();
         }
 
+        // Separate SEPA accounts from association data
+        $sepaAccounts = $input['sepaAccounts'] ?? null;
+        unset($input['sepaAccounts']);
+        
+        // Only allow known association columns
+        $allowedFields = ['name', 'description', 'logo', 'street', 'zip', 'city', 
+                          'contact_person', 'phone', 'facebook', 'instagram', 'website', 'email'];
+        $input = array_intersect_key($input, array_flip($allowedFields));
+
         $result = $db->update('association', $id, $input);
+        
+        // TODO: Handle SEPA accounts if provided
+        // if ($sepaAccounts) { ... }
+        
         echo json_encode($result);
         exit();
     }
