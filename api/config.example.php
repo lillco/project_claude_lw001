@@ -27,8 +27,10 @@ return [
         'charset' => 'utf8mb4'           // Character set
     ],
     'cors' => [
-        'allowed_origins' => ['*'],      // Allowed origins for CORS (* = all, or specific domains)
-        'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        'allowed_headers' => ['Content-Type', 'Authorization']
+        // PRODUCTION: Leave empty [] - all modules are same-origin (no CORS needed)
+        // DEVELOPMENT: Add your dev server origins, e.g.:
+        //   ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000']
+        // NEVER use '*' with credentials - it's a spec violation and security risk!
+        'allowed_origins' => []
     ]
 ];

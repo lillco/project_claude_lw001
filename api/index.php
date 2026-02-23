@@ -4,8 +4,14 @@
  * PHP/MySQL backend for production
  */
 
+// Production: disable error display (errors logged to server logs instead)
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/Database.php';
+require_once __DIR__ . '/AuthClass.php';
 
 // Handle CORS with strict origin validation
 handleCors();
@@ -13,6 +19,12 @@ header('Content-Type: application/json');
 
 // Initialize database (Database class loads config.php internally)
 $db = new Database();
+$auth = new Auth($db);
+
+// Require authentication for all modification operations (POST, PUT, DELETE)
+if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'])) {
+    $auth->requireAuth();
+}
 
 // Parse request
 $method = $_SERVER['REQUEST_METHOD'];

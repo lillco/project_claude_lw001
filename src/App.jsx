@@ -1,56 +1,469 @@
 import React, { useState } from 'react'
+import { generateId } from './utils/dataHelpers'
 import { useApi } from './hooks/useApi'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
 import AssociationForm from './components/forms/AssociationForm'
+import CategoryTypeForm from './components/forms/CategoryTypeForm'
+import CategoryForm from './components/forms/CategoryForm'
+import CategorizationForm from './components/forms/CategorizationForm'
+import CategoryTypesTable from './components/tables/CategoryTypesTable'
+import CategoriesTable from './components/tables/CategoriesTable'
+import CategorizationsTable from './components/tables/CategorizationsTable'
 import Modal from './components/shared/Modal'
-import { Edit } from 'lucide-react'
+import { Edit, Plus } from 'lucide-react'
 
 function App() {
-  // API Hook
   const api = useApi()
 
-  // UI state
   const [activeGroup, setActiveGroup] = useState('verwaltung')
   const [activeTab, setActiveTab] = useState('verein')
-  const [editMode, setEditMode] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [viewMode, setViewMode] = useState(false)
 
-  // Get the association (single record)
   const association = api.association
+  const settingsTabs = ['category_types', 'categories', 'categorizations']
 
   const handleGroupChange = (groupId) => {
     setActiveGroup(groupId)
+    setEditingId(null)
+    setViewMode(false)
   }
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId)
+    setEditingId(null)
+    setViewMode(false)
   }
 
-  const handleEdit = () => {
-    setEditMode(true)
+  const handleEdit = (id) => {
+    setEditingId(id)
+    setViewMode(false)
+  }
+
+  const handleRowClick = (id) => {
+    setEditingId(id)
+    setViewMode(true)
+  }
+
+  const handleChangeToEdit = () => {
+    setViewMode(false)
+  }
+
+  const handleCancel = () => {
+    setEditingId(null)
+    setViewMode(false)
+  }
+
+  const getEntityType = () => {
+    switch (activeTab) {
+      case 'category_types':
+        return 'category_type'
+      case 'categories':
+        return 'category'
+      case 'categorizations':
+        return 'categorization'
+      default:
+        return null
+    }
+  }
+
+  const addItem = async (type, data) => {
+    switch (type) {
+      case 'category_type': {
+        const payload = {
+          ...data,
+          id: data.id || `type_${generateId()}`
+        }
+        await api.addCategoryType(payload)
+        break
+      }
+      case 'category': {
+        const payload = {
+          ...data,
+          id: data.id || `cat_${generateId()}`
+        }
+        await api.addCategory(payload)
+        break
+      }
+      case 'categorization': {
+        for (const categoryId of data.categoryIds) {
+          await api.addCategorization({
+            id: `link_${generateId()}_${Math.random().toString(36).slice(2, 7)}`,
+            entityType: data.entityType,
+            entityId: data.entityId,
+            categoryId
+          })
+        }
+        break
+      }
+      default:
+        break
+    }
+  }
+
+  const updateItem = async (type, id, data) => {
+    switch (type) {
+      case 'category_type':
+        await api.updateCategoryType(id, data)
+        break
+      case 'category':
+        await api.updateCategory(id, data)
+        break
+      case 'categorization': {
+        const oldCategorizations = api.categorizations.filter(
+          item => item.entityType === data.entityType && item.entityId === data.entityId
+        )
+        for (const item of oldCategorizations) {
+          await api.deleteCategorization(item.id)
+        }
+        for (const categoryId of data.categoryIds) {
+          await api.addCategorization({
+            id: `link_${generateId()}_${Math.random().toString(36).slice(2, 7)}`,
+            entityType: data.entityType,
+            entityId: data.entityId,
+            categoryId
+          })
+        }
+        break
+      }
+      default:
+        break
+    }
+  }
+
+  const deleteItem = async (type, id) => {
+    switch (type) {
+      case 'category_type':
+        await api.deleteCategoryType(id)
+        break
+      case 'category':
+        await api.deleteCategory(id)
+        break
+      case 'categorization':
+        await api.deleteCategorization(id)
+        break
+      default:
+        break
+    }
+  }
+
+  const handleDelete = (type, id) => {
+    if (confirm('Moechten Sie diesen Eintrag wirklich loeschen?')) {
+      deleteItem(type, id)
+    }
+  }
+
+  const handleAdd = () => {
+    if (activeTab === 'verein') {
+      setEditingId(association?.id || 'new')
+      setViewMode(false)
+      return
+    }
+    setEditingId('new')
+    setViewMode(false)
   }
 
   const handleSave = async (data) => {
     try {
-      if (association) {
-        // Update existing
-        await api.updateAssociation(association.id, data)
-      } else {
-        // Create new (first time)
-        await api.createAssociation(data)
+      if (activeTab === 'verein') {
+        if (association?.id) {
+          await api.updateAssociation(association.id, data)
+        } else {
+          await api.createAssociation(data)
+        }
+        setEditingId(null)
+        return
       }
-      setEditMode(false)
-    } catch (err) {
-      console.error('Failed to save association:', err)
-      alert(`Fehler beim Speichern: ${err.message}`)
+
+      const type = getEntityType()
+      if (!type) return
+
+      if (editingId === 'new') {
+        await addItem(type, data)
+      } else {
+        await updateItem(type, editingId, data)
+      }
+      setEditingId(null)
+      setViewMode(false)
+    } catch (error) {
+      console.error('Failed to save item:', error)
+      alert(`Fehler beim Speichern: ${error.message}`)
     }
   }
 
-  const handleCancel = () => {
-    setEditMode(false)
+  const getEditingItem = () => {
+    if (!editingId || editingId === 'new') return null
+
+    switch (activeTab) {
+      case 'verein':
+        return association
+      case 'category_types':
+        return api.categoryTypes.find(item => item.id === editingId) || null
+      case 'categories':
+        return api.categories.find(item => item.id === editingId) || null
+      case 'categorizations':
+        return api.categorizations.find(item => item.id === editingId) || null
+      default:
+        return null
+    }
   }
 
-  // Show loading state
+  const getModalTitle = () => {
+    if (activeTab === 'verein') {
+      return association ? 'Verein bearbeiten' : 'Verein anlegen'
+    }
+
+    const action = viewMode ? '' : editingId === 'new' ? 'Neu: ' : 'Bearbeiten: '
+
+    switch (activeTab) {
+      case 'category_types':
+        return `${action}Kategorietyp`
+      case 'categories':
+        return `${action}Kategorie`
+      case 'categorizations':
+        return `${action}Kategorisierung`
+      default:
+        return ''
+    }
+  }
+
+  const renderForm = () => {
+    const item = getEditingItem()
+
+    switch (activeTab) {
+      case 'verein':
+        return (
+          <AssociationForm
+            association={association}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        )
+      case 'category_types':
+        return (
+          <CategoryTypeForm
+            categoryType={item}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            viewMode={viewMode}
+            onChangeToEdit={handleChangeToEdit}
+          />
+        )
+      case 'categories':
+        return (
+          <CategoryForm
+            category={item}
+            categoryTypes={api.categoryTypes}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            viewMode={viewMode}
+            onChangeToEdit={handleChangeToEdit}
+          />
+        )
+      case 'categorizations':
+        return (
+          <CategorizationForm
+            categorization={item}
+            categorizations={api.categorizations}
+            categories={api.categories}
+            association={association}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            viewMode={viewMode}
+            onChangeToEdit={handleChangeToEdit}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'verein':
+        return (
+          <div>
+            {association ? (
+              <div className="space-y-6">
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Firmierung</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {association.logo && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-500 mb-2">
+                          Logo
+                        </label>
+                        <img
+                          src={association.logo}
+                          alt="Vereinslogo"
+                          className="w-32 h-32 object-contain border border-gray-300 rounded"
+                        />
+                      </div>
+                    )}
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Name
+                      </label>
+                      <p className="text-lg text-gray-900">{association.name}</p>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Beschreibung
+                      </label>
+                      <p className="text-lg text-gray-900 whitespace-pre-wrap">{association.description || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Geschaeftsstelle</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Strasse
+                      </label>
+                      <p className="text-lg text-gray-900">{association.street || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        PLZ
+                      </label>
+                      <p className="text-lg text-gray-900">{association.zip || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Ort
+                      </label>
+                      <p className="text-lg text-gray-900">{association.city || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Ansprechpartner
+                      </label>
+                      <p className="text-lg text-gray-900">{association.contact_person || '-'}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Telefonnummer
+                      </label>
+                      <p className="text-lg text-gray-900">{association.phone || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Web und Social Media</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Website
+                      </label>
+                      {association.website ? (
+                        <a href={association.website} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                          {association.website}
+                        </a>
+                      ) : (
+                        <p className="text-lg text-gray-900">-</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        E-Mail
+                      </label>
+                      {association.email ? (
+                        <a href={`mailto:${association.email}`} className="text-lg text-blue-600 hover:underline">
+                          {association.email}
+                        </a>
+                      ) : (
+                        <p className="text-lg text-gray-900">-</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Facebook
+                      </label>
+                      {association.facebook ? (
+                        <a href={association.facebook} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                          {association.facebook}
+                        </a>
+                      ) : (
+                        <p className="text-lg text-gray-900">-</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-500 mb-1">
+                        Instagram
+                      </label>
+                      {association.instagram ? (
+                        <a href={association.instagram} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
+                          {association.instagram}
+                        </a>
+                      ) : (
+                        <p className="text-lg text-gray-900">-</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Bankverbindung</h3>
+                  <p className="text-sm text-gray-500 mb-4">
+                    SEPA-Konten werden hier angezeigt (noch nicht implementiert)
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <p className="text-gray-600 mb-4">Noch kein Verein angelegt.</p>
+                <button
+                  onClick={handleAdd}
+                  className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors font-semibold"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  Verein anlegen
+                </button>
+              </div>
+            )}
+          </div>
+        )
+      case 'category_types':
+        return (
+          <CategoryTypesTable
+            categoryTypes={api.categoryTypes}
+            onEdit={handleEdit}
+            onDelete={(id) => handleDelete('category_type', id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      case 'categories':
+        return (
+          <CategoriesTable
+            categories={api.categories}
+            onEdit={handleEdit}
+            onDelete={(id) => handleDelete('category', id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      case 'categorizations':
+        return (
+          <CategorizationsTable
+            categorizations={api.categorizations}
+            categories={api.categories}
+            association={association}
+            onEdit={handleEdit}
+            onDelete={(id) => handleDelete('categorization', id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      default:
+        return <div>Unbekannte Ansicht</div>
+    }
+  }
+
   if (api.loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -62,7 +475,6 @@ function App() {
     )
   }
 
-  // Show error state
   if (api.error) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -92,16 +504,17 @@ function App() {
 
       <main className="max-w-[1160px] mx-auto px-6 py-8">
         <div>
-          {/* Page header */}
           <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4">
             <h2 className="text-3xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
               {activeTab === 'verein' && 'Verein'}
+              {activeTab === 'category_types' && 'Kategorietypen'}
+              {activeTab === 'categories' && 'Kategorien'}
+              {activeTab === 'categorizations' && 'Kategorisierung'}
             </h2>
-            
-            {/* Edit button - only show if not in edit mode and association exists */}
-            {activeTab === 'verein' && !editMode && association && (
+
+            {activeTab === 'verein' && association && (
               <button
-                onClick={handleEdit}
+                onClick={handleAdd}
                 className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors flex items-center gap-2 font-semibold"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
@@ -109,174 +522,29 @@ function App() {
                 Bearbeiten
               </button>
             )}
+
+            {settingsTabs.includes(activeTab) && (
+              <button
+                onClick={handleAdd}
+                className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors flex items-center gap-2 font-semibold"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                <Plus className="w-5 h-5" />
+                Neu hinzufuegen
+              </button>
+            )}
           </div>
 
-          {/* Form Modal */}
           <Modal
-            isOpen={editMode}
+            isOpen={!!editingId}
             onClose={handleCancel}
-            title={association ? 'Verein bearbeiten' : 'Verein anlegen'}
-            size="large"
+            title={getModalTitle()}
+            size={activeTab === 'verein' ? 'large' : 'xlarge'}
           >
-            <AssociationForm
-              association={association}
-              onSave={handleSave}
-              onCancel={handleCancel}
-            />
+            {renderForm()}
           </Modal>
 
-          {/* Content */}
-          {activeTab === 'verein' && (
-            <div>
-              {association ? (
-                // Display association data
-                <div className="space-y-6">
-                  {/* Firmierung */}
-                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Firmierung</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {association.logo && (
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-500 mb-2">
-                            Logo
-                          </label>
-                          <img 
-                            src={association.logo} 
-                            alt="Vereinslogo" 
-                            className="w-32 h-32 object-contain border border-gray-300 rounded"
-                          />
-                        </div>
-                      )}
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Name
-                        </label>
-                        <p className="text-lg text-gray-900">{association.name}</p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Beschreibung
-                        </label>
-                        <p className="text-lg text-gray-900 whitespace-pre-wrap">{association.description || '-'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Geschäftsstelle */}
-                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Geschäftsstelle</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Straße
-                        </label>
-                        <p className="text-lg text-gray-900">{association.street || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          PLZ
-                        </label>
-                        <p className="text-lg text-gray-900">{association.zip || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Ort
-                        </label>
-                        <p className="text-lg text-gray-900">{association.city || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Ansprechpartner
-                        </label>
-                        <p className="text-lg text-gray-900">{association.contact_person || '-'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Telefonnummer
-                        </label>
-                        <p className="text-lg text-gray-900">{association.phone || '-'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Web & Social Media */}
-                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Web & Social Media</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Website
-                        </label>
-                        {association.website ? (
-                          <a href={association.website} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
-                            {association.website}
-                          </a>
-                        ) : (
-                          <p className="text-lg text-gray-900">-</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          E-Mail
-                        </label>
-                        {association.email ? (
-                          <a href={`mailto:${association.email}`} className="text-lg text-blue-600 hover:underline">
-                            {association.email}
-                          </a>
-                        ) : (
-                          <p className="text-lg text-gray-900">-</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Facebook
-                        </label>
-                        {association.facebook ? (
-                          <a href={association.facebook} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
-                            {association.facebook}
-                          </a>
-                        ) : (
-                          <p className="text-lg text-gray-900">-</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                          Instagram
-                        </label>
-                        {association.instagram ? (
-                          <a href={association.instagram} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 hover:underline">
-                            {association.instagram}
-                          </a>
-                        ) : (
-                          <p className="text-lg text-gray-900">-</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bankverbindung */}
-                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-                    <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Bankverbindung</h3>
-                    <p className="text-sm text-gray-500 mb-4">
-                      SEPA-Konten werden hier angezeigt (noch nicht implementiert)
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                // No association yet - show create button
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <p className="text-gray-600 mb-4">Noch kein Verein angelegt.</p>
-                  <button
-                    onClick={handleEdit}
-                    className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors font-semibold"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    Verein anlegen
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          {renderContent()}
         </div>
       </main>
     </div>

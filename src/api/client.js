@@ -64,6 +64,81 @@ export const associationAPI = {
   })
 }
 
+/**
+ * Category Types API
+ */
+export const categoryTypesAPI = {
+  getAll: () => apiRequest('/category_types'),
+
+  getById: (id) => apiRequest(`/category_types/${id}`),
+
+  create: (data) => apiRequest('/category_types', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  update: (id, data) => apiRequest(`/category_types/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  delete: (id) => apiRequest(`/category_types/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+/**
+ * Categories API
+ */
+export const categoriesAPI = {
+  getAll: () => apiRequest('/categories'),
+
+  getById: (id) => apiRequest(`/categories/${id}`),
+
+  create: (data) => apiRequest('/categories', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  update: (id, data) => apiRequest(`/categories/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  delete: (id) => apiRequest(`/categories/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+/**
+ * Categorization API
+ */
+export const categorizationAPI = {
+  getAll: () => apiRequest('/categorization'),
+
+  getById: (id) => apiRequest(`/categorization/${id}`),
+
+  getByEntity: (entityType, entityId) =>
+    apiRequest(`/categorization?entityType=${entityType}&entityId=${entityId}`),
+
+  getByCategory: (categoryId) =>
+    apiRequest(`/categorization?categoryId=${categoryId}`),
+
+  create: (data) => apiRequest('/categorization', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  update: (id, data) => apiRequest(`/categorization/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  delete: (id) => apiRequest(`/categorization/${id}`, {
+    method: 'DELETE'
+  })
+}
+
 // Export environment info for debugging
 export const apiInfo = {
   isProduction,

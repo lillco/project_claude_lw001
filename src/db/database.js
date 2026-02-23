@@ -48,6 +48,7 @@ class DatabaseLayer {
     } else {
       // SQLite for development/testing
       this.db = new Database(dbConfig.sqlite.filename)
+      this.db.pragma('foreign_keys = ON')
       this.db.pragma('journal_mode = WAL')
       console.log('Connected to SQLite database')
     }
@@ -76,6 +77,36 @@ class DatabaseLayer {
           website VARCHAR(500),
           email VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `,
+      category_types: `
+        CREATE TABLE IF NOT EXISTS category_types (
+          id VARCHAR(50) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          applicableEntities TEXT,
+          description TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `,
+      categories: `
+        CREATE TABLE IF NOT EXISTS categories (
+          id VARCHAR(50) PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          typeId VARCHAR(50),
+          description TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (typeId) REFERENCES category_types(id) ON DELETE SET NULL
+        )
+      `,
+      categorization: `
+        CREATE TABLE IF NOT EXISTS categorization (
+          id VARCHAR(50) PRIMARY KEY,
+          entityType VARCHAR(50) NOT NULL,
+          entityId VARCHAR(50) NOT NULL,
+          categoryId VARCHAR(50) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(entityType, entityId, categoryId),
+          FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE CASCADE
         )
       `,
       association_sepa: `
@@ -124,6 +155,25 @@ class DatabaseLayer {
    */
   async getAll(tableName) {
     return await this.query(`SELECT * FROM ${tableName}`)
+  }
+
+  /**
+   * Get records using WHERE condition
+   */
+  async getWhere(tableName, whereClause, params = []) {
+    return await this.query(`SELECT * FROM ${tableName} WHERE ${whereClause}`, params)
+  }
+
+  /**
+   * Get all categories including type metadata
+   */
+  async getAllCategoriesWithType() {
+    return await this.query(`
+      SELECT c.*, ct.name as typeName, ct.applicableEntities
+      FROM categories c
+      LEFT JOIN category_types ct ON c.typeId = ct.id
+      ORDER BY c.name ASC
+    `)
   }
 
   /**
