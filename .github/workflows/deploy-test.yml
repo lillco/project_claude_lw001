@@ -1,4 +1,4 @@
-name: Deploy Vereinsverwaltung to Netcup
+name: Deploy Vereinsverwaltung to TEST (lwtest.lillco.de)
 
 on:
   push:
@@ -38,7 +38,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y lftp
 
-      - name: Deploy via FTPS (lftp)
+      - name: Deploy via FTPS (lftp) to TEST
         run: |
           lftp -u "${{ secrets.FTP_USER }},${{ secrets.FTP_PASSWORD }}" ftp://${{ secrets.FTP_HOST }} \
             -e "
@@ -49,6 +49,6 @@ jobs:
               set net:timeout 20;
               set net:max-retries 3;
               set cmd:fail-exit yes;
-              mirror -R --delete --verbose --exclude api/config.php dist/ association/;
+              mirror -R --delete --verbose --exclude api/config.php dist/ lwtest.lillco.de/htdocs/association/;
               bye
             "
