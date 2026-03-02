@@ -49,6 +49,6 @@ jobs:
               set net:timeout 20;
               set net:max-retries 3;
               set cmd:fail-exit yes;
-              mirror -R --delete --verbose --exclude api/config.php dist/ association/;
+              mirror -R --delete --verbose --exclude api/config.php dist/ lw.lillco.de/htdocs/association/;
               bye
             "
