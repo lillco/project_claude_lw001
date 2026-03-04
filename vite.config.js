@@ -10,6 +10,9 @@ const copyFilesPlugin = () => ({
   closeBundle() {
     // Copy root .htaccess to dist/
     if (existsSync('.htaccess')) {
+      if (!existsSync('dist')) {
+        mkdirSync('dist', { recursive: true })
+      }
       copyFileSync('.htaccess', 'dist/.htaccess')
       console.log('✓ Copied .htaccess to dist/')
     }
