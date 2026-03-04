@@ -1,6 +1,7 @@
 import React from 'react'
 import { LogOut, User, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth.jsx'
+import logo from '../../assets/logo.jpg'
 
 function Header() {
   const { user, logout } = useAuth()
@@ -9,13 +10,20 @@ function Header() {
     <header className="bg-[#76b332] text-black shadow-lg">
       <div className="max-w-[1160px] mx-auto px-6 py-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="header-title">
-              Lebendiges Weinheim
-            </h1>
-            <p className="header-subtitle">
-              Vereinsverwaltung
-            </p>
+          <div className="flex items-center gap-4">
+            <img 
+              src={logo} 
+              alt="Lebendiges Weinheim Logo" 
+              className="w-12 h-12 object-contain"
+            />
+            <div>
+              <h1 className="header-title">
+                Lebendiges Weinheim
+              </h1>
+              <p className="header-subtitle">
+                Vereinsverwaltung
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">

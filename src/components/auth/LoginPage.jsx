@@ -1,11 +1,18 @@
 import React, { useState } from 'react'
 import { LogIn } from 'lucide-react'
+import TestBanner from '../TestBanner'
+import { isTestEnvironment, TEST_COLOR, PROD_COLOR } from '../../config/environment'
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  const isTest = isTestEnvironment()
+  const primaryColor = isTest ? TEST_COLOR : PROD_COLOR
+  const gradientFrom = isTest ? 'from-purple-50' : 'from-gray-50'
+  const gradientTo = isTest ? 'to-purple-100' : 'to-gray-100'
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -29,12 +36,14 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col">
+      <TestBanner />
+      <div className={`flex-1 bg-gradient-to-br ${gradientFrom} ${gradientTo} flex items-center justify-center px-4`}>
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg p-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#76b332] rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: primaryColor }}>
               <LogIn className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -61,7 +70,8 @@ export default function LoginPage({ onLogin }) {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#76b332] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                 placeholder="admin"
                 required
                 autoComplete="username"
@@ -78,7 +88,8 @@ export default function LoginPage({ onLogin }) {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#76b332] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
@@ -89,8 +100,14 @@ export default function LoginPage({ onLogin }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#76b332] text-white py-3 rounded font-semibold hover:bg-[#5a8a28] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ fontFamily: "'Inter', sans-serif" }}
+              className="w-full text-white py-3 rounded font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ 
+                fontFamily: "'Inter', sans-serif",
+                backgroundColor: primaryColor,
+                opacity: loading ? 0.5 : 1
+              }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
+              onMouseLeave={(e) => !loading && (e.currentTarget.style.opacity = '1')}
             >
               {loading ? (
                 <>
@@ -117,6 +134,7 @@ export default function LoginPage({ onLogin }) {
         <div className="text-center mt-6 text-sm text-gray-600">
           Vereinsverwaltung &copy; {new Date().getFullYear()}
         </div>
+      </div>
       </div>
     </div>
   )

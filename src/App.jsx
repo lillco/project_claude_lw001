@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { generateId } from './utils/dataHelpers'
 import { useApi } from './hooks/useApi'
+import TestBanner from './components/TestBanner'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
 import AssociationForm from './components/forms/AssociationForm'
@@ -493,6 +494,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      <TestBanner />
       <Header />
 
       <Navigation
