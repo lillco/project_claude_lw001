@@ -71,7 +71,7 @@ export default function LoginPage({ onLogin }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                style={{ '--tw-ring-color': primaryColor }}
                 placeholder="admin"
                 required
                 autoComplete="username"
@@ -89,7 +89,7 @@ export default function LoginPage({ onLogin }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                style={{ '--tw-ring-color': primaryColor }}
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
