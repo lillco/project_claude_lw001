@@ -36,6 +36,10 @@ $segments = explode('/', $path);
 $input = json_decode(file_get_contents('php://input'), true);
 
 try {
+    // Determine entity type
+    $entity = $segments[0] ?? null;
+    $id = $segments[1] ?? null;
+
     // Route: GET /association - Get association (single record)
     if ($method === 'GET' && $path === 'association') {
         $result = $db->getFirst('association');
@@ -101,6 +105,86 @@ try {
         
         echo json_encode($result);
         exit();
+    }
+
+    // Generic CRUD routes for categorization tables
+    $categorizationEntities = ['category_types', 'categories', 'categorization'];
+    
+    if (in_array($entity, $categorizationEntities)) {
+        switch ($method) {
+            case 'GET':
+                if ($id) {
+                    // Get single record by ID
+                    $result = $db->getById($entity, $id);
+                    if (!$result) {
+                        http_response_code(404);
+                        echo json_encode(['error' => 'Record not found']);
+                    } else {
+                        echo json_encode($result);
+                    }
+                } else {
+                    // Get all records
+                    // For categories, JOIN with category_types to get applicableEntities
+                    if ($entity === 'categories') {
+                        $conn = $db->getConnection();
+                        $stmt = $conn->query("
+                            SELECT c.*, ct.name as typeName, ct.applicableEntities 
+                            FROM categories c
+                            LEFT JOIN category_types ct ON c.typeId = ct.id
+                        ");
+                        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        echo json_encode($result);
+                    } else {
+                        $result = $db->getAll($entity);
+                        echo json_encode($result);
+                    }
+                }
+                exit();
+
+            case 'POST':
+                // Create new record
+                if (!$input) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'No data provided']);
+                    exit();
+                }
+                $result = $db->insert($entity, $input);
+                http_response_code(201);
+                echo json_encode($result);
+                exit();
+
+            case 'PUT':
+                // Update existing record
+                if (!$id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'No ID provided']);
+                    exit();
+                }
+                if (!$input) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'No data provided']);
+                    exit();
+                }
+                $result = $db->update($entity, $id, $input);
+                echo json_encode($result);
+                exit();
+
+            case 'DELETE':
+                // Delete record
+                if (!$id) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'No ID provided']);
+                    exit();
+                }
+                $result = $db->delete($entity, $id);
+                echo json_encode($result);
+                exit();
+
+            default:
+                http_response_code(405);
+                echo json_encode(['error' => 'Method not allowed']);
+                exit();
+        }
     }
 
     // No route matched

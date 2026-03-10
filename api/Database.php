@@ -95,6 +95,52 @@ class Database {
             )
         ";
         $this->conn->exec($sql);
+        
+        // Category Types table
+        $sql = "
+            CREATE TABLE IF NOT EXISTS category_types (
+                id VARCHAR(50) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                applicableEntities TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ";
+        $this->conn->exec($sql);
+        
+        // Categories table
+        $sql = "
+            CREATE TABLE IF NOT EXISTS categories (
+                id VARCHAR(50) PRIMARY KEY,
+                typeId VARCHAR(50) NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (typeId) REFERENCES category_types(id) ON DELETE CASCADE
+            )
+        ";
+        $this->conn->exec($sql);
+        
+        // Categorization table (junction table)
+        $sql = "
+            CREATE TABLE IF NOT EXISTS categorization (
+                id VARCHAR(50) PRIMARY KEY,
+                entityType VARCHAR(50) NOT NULL,
+                entityId VARCHAR(50) NOT NULL,
+                categoryId VARCHAR(50) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (categoryId) REFERENCES categories(id) ON DELETE CASCADE,
+                UNIQUE KEY unique_categorization (entityType, entityId, categoryId)
+            )
+        ";
+        $this->conn->exec($sql);
+    }
+
+    /**
+     * Get all records from table
+     */
+    public function getAll($table) {
+        $stmt = $this->conn->prepare("SELECT * FROM {$table}");
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     /**
@@ -157,6 +203,13 @@ class Database {
         $stmt = $this->conn->prepare("DELETE FROM {$table} WHERE id = ?");
         $stmt->execute([$id]);
         return ['id' => $id];
+    }
+
+    /**
+     * Get the PDO connection object
+     */
+    public function getConnection() {
+        return $this->conn;
     }
 
     /**
