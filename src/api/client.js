@@ -139,6 +139,27 @@ export const categorizationAPI = {
   })
 }
 
+/**
+ * Generic API Client
+ */
+export const apiClient = {
+  get: (endpoint) => apiRequest(endpoint),
+  
+  post: (endpoint, data) => apiRequest(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+  
+  put: (endpoint, data) => apiRequest(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+  
+  delete: (endpoint) => apiRequest(endpoint, {
+    method: 'DELETE'
+  })
+}
+
 // Export environment info for debugging
 export const apiInfo = {
   isProduction,
