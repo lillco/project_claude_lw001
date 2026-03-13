@@ -5,12 +5,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { associationAPI, categoryTypesAPI, categoriesAPI, categorizationAPI } from '../api/client'
+import { contactsAPI } from '../api/contacts'
 
 export function useApi() {
   const [association, setAssociation] = useState(null)
   const [categoryTypes, setCategoryTypes] = useState([])
   const [categories, setCategories] = useState([])
   const [categorizations, setCategorizations] = useState([])
+  const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -24,7 +26,7 @@ export function useApi() {
     setError(null)
 
     try {
-      const [associationData, categoryTypesData, categoriesData, categorizationsData] = await Promise.all([
+      const [associationData, categoryTypesData, categoriesData, categorizationsData, contactsData] = await Promise.all([
         associationAPI.get().catch(err => {
           console.error('Failed to load association:', err)
           return null
@@ -40,6 +42,10 @@ export function useApi() {
         categorizationAPI.getAll().catch(err => {
           console.error('Failed to load categorizations:', err)
           return []
+        }),
+        contactsAPI.getAll().catch(err => {
+          console.error('Failed to load contacts:', err)
+          return []
         })
       ])
 
@@ -47,6 +53,7 @@ export function useApi() {
       setCategoryTypes(Array.isArray(categoryTypesData) ? categoryTypesData : [])
       setCategories(Array.isArray(categoriesData) ? categoriesData : [])
       setCategorizations(Array.isArray(categorizationsData) ? categorizationsData : [])
+      setContacts(Array.isArray(contactsData) ? contactsData : [])
     } catch (err) {
       setError(err.message)
       console.error('Failed to load data:', err)
@@ -178,12 +185,46 @@ export function useApi() {
     }
   }, [])
 
+  // Contact operations
+  const addContact = useCallback(async (data) => {
+    try {
+      const created = await contactsAPI.create(data)
+      setContacts(prev => [...prev, created])
+      return created
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }, [])
+
+  const updateContact = useCallback(async (id, data) => {
+    try {
+      const updated = await contactsAPI.update(id, data)
+      setContacts(prev => prev.map(item => item.id === id ? updated : item))
+      return updated
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }, [])
+
+  const deleteContact = useCallback(async (id) => {
+    try {
+      await contactsAPI.delete(id)
+      setContacts(prev => prev.filter(item => item.id !== id))
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }, [])
+
   return {
     // Data
     association,
     categoryTypes,
     categories,
     categorizations,
+    contacts,
 
     // State
     loading,
@@ -201,6 +242,9 @@ export function useApi() {
     addCategorization,
     updateCategorization,
     deleteCategorization,
+    addContact,
+    updateContact,
+    deleteContact,
 
     // Utility
     reload: loadData

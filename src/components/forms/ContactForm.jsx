@@ -1,0 +1,371 @@
+import React, { useState, useEffect } from 'react'
+import { Save, X } from 'lucide-react'
+import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
+
+function ContactForm({ contact, contactType, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
+  const [formData, setFormData] = useState({
+    contact_type: contactType,
+    location_category_id: '',
+    status: 'active',
+    entry_date: '',
+    company_name: '',
+    salutation: '',
+    contact_person: '',
+    street: '',
+    zip: '',
+    city: '',
+    alt_street: '',
+    alt_zip: '',
+    alt_city: ''
+  })
+
+  const [communicationChannels, setCommunicationChannels] = useState([])
+
+  useEffect(() => {
+    if (contact) {
+      setFormData({
+        contact_type: contact.contact_type || contactType,
+        location_category_id: contact.location_category_id || '',
+        status: contact.status || 'active',
+        entry_date: contact.entry_date || '',
+        company_name: contact.company_name || '',
+        salutation: contact.salutation || '',
+        contact_person: contact.contact_person || '',
+        street: contact.street || '',
+        zip: contact.zip || '',
+        city: contact.city || '',
+        alt_street: contact.alt_street || '',
+        alt_zip: contact.alt_zip || '',
+        alt_city: contact.alt_city || ''
+      })
+      // TODO: Load communication channels from API
+      setCommunicationChannels([])
+    } else {
+      setFormData(prev => ({ ...prev, contact_type: contactType }))
+    }
+  }, [contact, contactType])
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleAddChannel = () => {
+    setCommunicationChannels(prev => [
+      ...prev,
+      {
+        id: `temp_${Date.now()}`,
+        type: '',
+        label: '',
+        value: '',
+        is_primary: false
+      }
+    ])
+  }
+
+  const handleChannelChange = (index, field, value) => {
+    setCommunicationChannels(prev => {
+      const updated = [...prev]
+      
+      // If setting is_primary to true, unset all others
+      if (field === 'is_primary' && value === true) {
+        updated.forEach((ch, i) => {
+          if (i !== index) ch.is_primary = false
+        })
+      }
+      
+      updated[index][field] = value
+      return updated
+    })
+  }
+
+  const handleRemoveChannel = (index) => {
+    setCommunicationChannels(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSave({
+      ...formData,
+      communicationChannels
+    })
+  }
+
+  // Filter location categories
+  const locationCategories = categories.filter(cat => 
+    cat.typeName === 'Lage' || cat.typeId?.includes('lage')
+  )
+
+  const getContactTypeLabel = () => {
+    switch (contactType) {
+      case 'organ': return 'Organ'
+      case 'member': return 'Mitglied'
+      case 'retailer': return 'Einzelhändler'
+      default: return 'Kontakt'
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Stammdaten */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Stammdaten</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Firma / Name *
+            </label>
+            <input
+              type="text"
+              name="company_name"
+              value={formData.company_name}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Anrede
+            </label>
+            <select
+              name="salutation"
+              value={formData.salutation}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            >
+              <option value="">Bitte wählen...</option>
+              <option value="Herr">Herr</option>
+              <option value="Frau">Frau</option>
+              <option value="Divers">Divers</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ansprechpartner
+            </label>
+            <input
+              type="text"
+              name="contact_person"
+              value={formData.contact_person}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status *
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              required
+            >
+              <option value="active">Aktiv</option>
+              <option value="inactive">Inaktiv</option>
+              <option value="terminated">Gekündigt</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Eintrittsdatum
+            </label>
+            <input
+              type="date"
+              name="entry_date"
+              value={formData.entry_date}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Lage
+            </label>
+            <select
+              name="location_category_id"
+              value={formData.location_category_id}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            >
+              <option value="">Bitte wählen...</option>
+              {locationCategories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Geschäftsadresse */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Geschäftsadresse</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Straße
+            </label>
+            <input
+              type="text"
+              name="street"
+              value={formData.street}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PLZ
+            </label>
+            <input
+              type="text"
+              name="zip"
+              value={formData.zip}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              maxLength="10"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ort
+            </label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Abweichende Geschäftsadresse */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">
+          Abweichende Geschäftsadresse <span className="text-sm font-normal text-gray-500">(optional)</span>
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Straße (abweichend)
+            </label>
+            <input
+              type="text"
+              name="alt_street"
+              value={formData.alt_street}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              PLZ (abweichend)
+            </label>
+            <input
+              type="text"
+              name="alt_zip"
+              value={formData.alt_zip}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              maxLength="10"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ort (abweichend)
+            </label>
+            <input
+              type="text"
+              name="alt_city"
+              value={formData.alt_city}
+              onChange={handleChange}
+              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Kommunikationskanäle */}
+      {!viewMode && (
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <CommunicationChannelsTable
+            channels={communicationChannels}
+            onAdd={handleAddChannel}
+            onChange={handleChannelChange}
+            onRemove={handleRemoveChannel}
+          />
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-2 pt-4">
+        {viewMode ? (
+          <>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Schließen
+            </button>
+            <button
+              type="button"
+              onClick={onChangeToEdit}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              Bearbeiten
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+            >
+              <X className="w-4 h-4" />
+              Abbrechen
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#76b332] text-white rounded-md hover:bg-[#5a8a28] flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {contact ? 'Aktualisieren' : 'Erstellen'}
+            </button>
+          </>
+        )}
+      </div>
+    </form>
+  )
+}
+
+export default ContactForm

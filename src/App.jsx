@@ -5,9 +5,11 @@ import TestBanner from './components/TestBanner'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
 import AssociationForm from './components/forms/AssociationForm'
+import ContactForm from './components/forms/ContactForm'
 import CategoryTypeForm from './components/forms/CategoryTypeForm'
 import CategoryForm from './components/forms/CategoryForm'
 import CategorizationForm from './components/forms/CategorizationForm'
+import ContactsTable from './components/tables/ContactsTable'
 import CategoryTypesTable from './components/tables/CategoryTypesTable'
 import CategoriesTable from './components/tables/CategoriesTable'
 import CategorizationsTable from './components/tables/CategorizationsTable'
@@ -23,6 +25,7 @@ function App() {
   const [viewMode, setViewMode] = useState(false)
 
   const association = api.association
+  const contactTabs = ['organe', 'mitglieder', 'einzelhaendler']
   const settingsTabs = ['category_types', 'categories', 'categorizations']
 
   const handleGroupChange = (groupId) => {
@@ -177,6 +180,18 @@ function App() {
         return
       }
 
+      // Handle contacts
+      if (contactTabs.includes(activeTab)) {
+        if (editingId === 'new') {
+          await api.addContact(data)
+        } else {
+          await api.updateContact(editingId, data)
+        }
+        setEditingId(null)
+        setViewMode(false)
+        return
+      }
+
       const type = getEntityType()
       if (!type) return
 
@@ -193,12 +208,25 @@ function App() {
     }
   }
 
+  const getContactType = () => {
+    switch (activeTab) {
+      case 'organe': return 'organ'
+      case 'mitglieder': return 'member'
+      case 'einzelhaendler': return 'retailer'
+      default: return null
+    }
+  }
+
   const getEditingItem = () => {
     if (!editingId || editingId === 'new') return null
 
     switch (activeTab) {
       case 'verein':
         return association
+      case 'organe':
+      case 'mitglieder':
+      case 'einzelhaendler':
+        return api.contacts.find(item => item.id === editingId) || null
       case 'category_types':
         return api.categoryTypes.find(item => item.id === editingId) || null
       case 'categories':
@@ -218,6 +246,12 @@ function App() {
     const action = viewMode ? '' : editingId === 'new' ? 'Neu: ' : 'Bearbeiten: '
 
     switch (activeTab) {
+      case 'organe':
+        return `${action}Organ`
+      case 'mitglieder':
+        return `${action}Mitglied`
+      case 'einzelhaendler':
+        return `${action}Einzelhändler`
       case 'category_types':
         return `${action}Kategorietyp`
       case 'categories':
@@ -239,6 +273,20 @@ function App() {
             association={association}
             onSave={handleSave}
             onCancel={handleCancel}
+          />
+        )
+      case 'organe':
+      case 'mitglieder':
+      case 'einzelhaendler':
+        return (
+          <ContactForm
+            contact={item}
+            contactType={getContactType()}
+            categories={api.categories}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            viewMode={viewMode}
+            onChangeToEdit={handleChangeToEdit}
           />
         )
       case 'category_types':
@@ -448,6 +496,39 @@ function App() {
             showSearch={!editingId}
           />
         )
+      case 'organe':
+        return (
+          <ContactsTable
+            contacts={api.contacts}
+            contactType="organ"
+            onEdit={handleEdit}
+            onDelete={(id) => api.deleteContact(id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      case 'mitglieder':
+        return (
+          <ContactsTable
+            contacts={api.contacts}
+            contactType="member"
+            onEdit={handleEdit}
+            onDelete={(id) => api.deleteContact(id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      case 'einzelhaendler':
+        return (
+          <ContactsTable
+            contacts={api.contacts}
+            contactType="retailer"
+            onEdit={handleEdit}
+            onDelete={(id) => api.deleteContact(id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
       case 'categorizations':
         return (
           <CategorizationsTable
@@ -509,6 +590,9 @@ function App() {
           <div className="mb-6 flex items-center justify-between border-b border-gray-200 pb-4">
             <h2 className="text-3xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
               {activeTab === 'verein' && 'Verein'}
+              {activeTab === 'organe' && 'Organe'}
+              {activeTab === 'mitglieder' && 'Mitglieder'}
+              {activeTab === 'einzelhaendler' && 'Einzelhändler'}
               {activeTab === 'category_types' && 'Kategorietypen'}
               {activeTab === 'categories' && 'Kategorien'}
               {activeTab === 'categorizations' && 'Kategorisierung'}
@@ -525,7 +609,7 @@ function App() {
               </button>
             )}
 
-            {settingsTabs.includes(activeTab) && (
+            {(contactTabs.includes(activeTab) || settingsTabs.includes(activeTab)) && (
               <button
                 onClick={handleAdd}
                 className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors flex items-center gap-2 font-semibold"

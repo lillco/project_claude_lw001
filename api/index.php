@@ -107,6 +107,123 @@ try {
         exit();
     }
 
+    // ===== CONTACTS ENDPOINTS =====
+    
+    // Route: GET /contacts - Get all contacts
+    if ($method === 'GET' && $path === 'contacts') {
+        $result = $db->getAll('contacts');
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: GET /contacts/:id - Get single contact
+    if ($method === 'GET' && $segments[0] === 'contacts' && isset($segments[1]) && !isset($segments[2])) {
+        $id = $segments[1];
+        $result = $db->getById('contacts', $id);
+        if (!$result) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Contact not found']);
+        } else {
+            echo json_encode($result);
+        }
+        exit();
+    }
+
+    // Route: POST /contacts - Create new contact
+    if ($method === 'POST' && $path === 'contacts') {
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $data = array_merge([
+            'id' => (string)time() . rand(100, 999),
+        ], $input);
+
+        $result = $db->insert('contacts', $data);
+        http_response_code(201);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: PUT /contacts/:id - Update contact
+    if ($method === 'PUT' && $segments[0] === 'contacts' && isset($segments[1]) && !isset($segments[2])) {
+        $id = $segments[1];
+
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $result = $db->update('contacts', $id, $input);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: DELETE /contacts/:id - Delete contact
+    if ($method === 'DELETE' && $segments[0] === 'contacts' && isset($segments[1]) && !isset($segments[2])) {
+        $id = $segments[1];
+        $result = $db->delete('contacts', $id);
+        echo json_encode(['success' => true, 'id' => $id]);
+        exit();
+    }
+
+    // ===== CONTACT COMMUNICATION ENDPOINTS =====
+
+    // Route: GET /contacts/:id/communication - Get all communication channels for a contact
+    if ($method === 'GET' && $segments[0] === 'contacts' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
+        $contactId = $segments[1];
+        $result = $db->getWhere('contact_communication', 'contact_id = ?', [$contactId]);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: POST /contacts/:id/communication - Add communication channel
+    if ($method === 'POST' && $segments[0] === 'contacts' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
+        $contactId = $segments[1];
+
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $data = array_merge([
+            'id' => (string)time() . rand(100, 999),
+            'contact_id' => $contactId,
+        ], $input);
+
+        $result = $db->insert('contact_communication', $data);
+        http_response_code(201);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: PUT /communication/:id - Update communication channel
+    if ($method === 'PUT' && $segments[0] === 'communication' && isset($segments[1])) {
+        $id = $segments[1];
+
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $result = $db->update('contact_communication', $id, $input);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: DELETE /communication/:id - Delete communication channel
+    if ($method === 'DELETE' && $segments[0] === 'communication' && isset($segments[1])) {
+        $id = $segments[1];
+        $result = $db->delete('contact_communication', $id);
+        echo json_encode(['success' => true, 'id' => $id]);
+        exit();
+    }
+
     // Generic CRUD routes for categorization tables
     $categorizationEntities = ['category_types', 'categories', 'categorization'];
     

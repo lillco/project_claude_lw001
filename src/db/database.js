@@ -121,6 +121,38 @@ class DatabaseLayer {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (association_id) REFERENCES association(id) ON DELETE CASCADE
         )
+      `,
+      contacts: `
+        CREATE TABLE IF NOT EXISTS contacts (
+          id VARCHAR(50) PRIMARY KEY,
+          contact_type VARCHAR(50) NOT NULL,
+          location_category_id VARCHAR(50),
+          status VARCHAR(50) NOT NULL,
+          entry_date DATE,
+          company_name VARCHAR(255) NOT NULL,
+          salutation VARCHAR(50),
+          contact_person VARCHAR(255),
+          street VARCHAR(255),
+          zip VARCHAR(10),
+          city VARCHAR(255),
+          alt_street VARCHAR(255),
+          alt_zip VARCHAR(10),
+          alt_city VARCHAR(255),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (location_category_id) REFERENCES categories(id) ON DELETE SET NULL
+        )
+      `,
+      contact_communication: `
+        CREATE TABLE IF NOT EXISTS contact_communication (
+          id VARCHAR(50) PRIMARY KEY,
+          contact_id VARCHAR(50) NOT NULL,
+          type VARCHAR(50) NOT NULL,
+          label VARCHAR(255),
+          value TEXT NOT NULL,
+          is_primary BOOLEAN DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+        )
       `
     }
 

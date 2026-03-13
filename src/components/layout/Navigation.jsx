@@ -9,7 +9,10 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
 
   const tabs = {
     verwaltung: [
-      { id: 'verein', label: 'Verein' }
+      { id: 'verein', label: 'Verein' },
+      { id: 'organe', label: 'Organe' },
+      { id: 'mitglieder', label: 'Mitglieder' },
+      { id: 'einzelhaendler', label: 'Einzelhändler' }
     ],
     einstellungen: [
       { id: 'categories', label: 'Kategorien' },
