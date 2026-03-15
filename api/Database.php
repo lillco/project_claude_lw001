@@ -132,6 +132,44 @@ class Database {
             )
         ";
         $this->conn->exec($sql);
+
+        // Contacts table
+        $sql = "
+            CREATE TABLE IF NOT EXISTS contacts (
+                id VARCHAR(50) PRIMARY KEY,
+                contact_type VARCHAR(50) NOT NULL,
+                location_category_id VARCHAR(50),
+                status VARCHAR(50) DEFAULT 'active',
+                entry_date DATE,
+                company_name VARCHAR(255),
+                salutation VARCHAR(50),
+                contact_person VARCHAR(255),
+                street VARCHAR(255),
+                zip VARCHAR(10),
+                city VARCHAR(255),
+                alt_street VARCHAR(255),
+                alt_zip VARCHAR(10),
+                alt_city VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (location_category_id) REFERENCES categories(id) ON DELETE SET NULL
+            )
+        ";
+        $this->conn->exec($sql);
+
+        // Contact communication channels table
+        $sql = "
+            CREATE TABLE IF NOT EXISTS contact_communication (
+                id VARCHAR(50) PRIMARY KEY,
+                contact_id VARCHAR(50) NOT NULL,
+                type VARCHAR(50) NOT NULL,
+                label VARCHAR(255),
+                value VARCHAR(500),
+                is_primary BOOLEAN DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+            )
+        ";
+        $this->conn->exec($sql);
     }
 
     /**
@@ -159,6 +197,15 @@ class Database {
         $stmt = $this->conn->prepare("SELECT * FROM {$table} WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch() ?: null;
+    }
+
+    /**
+     * Get records matching a WHERE clause
+     */
+    public function getWhere($table, $where, $params = []) {
+        $stmt = $this->conn->prepare("SELECT * FROM {$table} WHERE {$where}");
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     /**
