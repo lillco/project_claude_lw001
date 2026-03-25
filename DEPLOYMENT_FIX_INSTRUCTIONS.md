@@ -16,13 +16,35 @@ The foreign key constraint has been removed from the `contacts` table and replac
 ## Deployment Steps
 
 ### Step 1: Run the SQL Fix Script
-Execute the SQL script to fix the existing database:
+
+**Option A: Via SSH (Recommended)**
+If you have SSH access to the server:
 
 ```bash
+# SSH into your server
+ssh user@server
+
+# Navigate to the project directory
+cd /path/to/association
+
+# Run the SQL script
 mysql -u [username] -p [database_name] < api/fix_database.sql
 ```
 
-Or manually run the SQL commands in `api/fix_database.sql` through phpMyAdmin or your preferred MySQL client.
+**Option B: Via phpMyAdmin**
+1. Log into phpMyAdmin
+2. Select your database
+3. Click on the "SQL" tab
+4. Copy and paste the contents of `api/fix_database.sql`
+5. Click "Go" to execute
+
+**Option C: Via MySQL Workbench or other GUI tool**
+1. Open your MySQL client
+2. Connect to your database
+3. Open the `api/fix_database.sql` file
+4. Execute the script
+
+**Note:** The SQL file is protected by `.htaccess` and cannot be accessed via web browser for security reasons.
 
 ### Step 2: Deploy Updated Files
 Upload the updated `api/Database.php` file to the production server:

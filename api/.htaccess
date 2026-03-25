@@ -7,7 +7,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L,QSA]
 
 # Protect sensitive files
-<FilesMatch "^(config\.php|Database\.php|AuthClass\.php|cors\.php)$">
+<FilesMatch "^(config\.php|Database\.php|AuthClass\.php|cors\.php|.*\.sql)$">
     Order Allow,Deny
     Deny from all
 </FilesMatch>
