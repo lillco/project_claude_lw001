@@ -150,8 +150,7 @@ class Database {
                 alt_street VARCHAR(255),
                 alt_zip VARCHAR(10),
                 alt_city VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (location_category_id) REFERENCES categories(id) ON DELETE SET NULL
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ";
         $this->conn->exec($sql);
