@@ -133,7 +133,7 @@ class Database {
         ";
         $this->conn->exec($sql);
 
-        // Contacts table
+        // Contacts table (removed foreign key constraint to fix compatibility issue)
         $sql = "
             CREATE TABLE IF NOT EXISTS contacts (
                 id VARCHAR(50) PRIMARY KEY,
@@ -150,7 +150,8 @@ class Database {
                 alt_street VARCHAR(255),
                 alt_zip VARCHAR(10),
                 alt_city VARCHAR(255),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_location_category (location_category_id)
             )
         ";
         $this->conn->exec($sql);
