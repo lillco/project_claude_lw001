@@ -30,3 +30,6 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 *.sql
+
+# Debug logs
+api/debug.log

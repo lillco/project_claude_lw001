@@ -13,6 +13,37 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/AuthClass.php';
 
+/**
+ * Debug logging helper
+ * Logs to file AND sends as HTTP header (visible in browser DevTools)
+ */
+$debugMessages = [];
+
+function debugLog($message, $data = null) {
+    global $debugMessages;
+    
+    // Log to file
+    $logFile = __DIR__ . '/debug.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $logMessage = "[$timestamp] $message";
+    if ($data !== null) {
+        $logMessage .= "\n" . print_r($data, true);
+    }
+    $logMessage .= "\n---\n";
+    file_put_contents($logFile, $logMessage, FILE_APPEND);
+    
+    // Also collect for HTTP header (visible in browser console)
+    $debugMessages[] = $message . ($data ? ' [see debug.log for details]' : '');
+}
+
+function sendDebugHeaders() {
+    global $debugMessages;
+    if (!empty($debugMessages)) {
+        // Send as custom header (visible in Network tab -> Response Headers)
+        header('X-Debug-Log: ' . implode(' | ', $debugMessages));
+    }
+}
+
 // Handle CORS with strict origin validation
 handleCors();
 header('Content-Type: application/json');
@@ -137,11 +168,48 @@ try {
             exit();
         }
 
+        debugLog('POST /contacts - Input received:', $input);
+
+        // Separate communication channels from contact data
+        $communicationChannels = $input['communicationChannels'] ?? [];
+        unset($input['communicationChannels']);
+
+        // Only allow known contact columns
+        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+                          'company_name', 'salutation', 'contact_person', 'street', 'zip', 
+                          'city', 'alt_street', 'alt_zip', 'alt_city'];
+        $input = array_intersect_key($input, array_flip($allowedFields));
+
         $data = array_merge([
             'id' => (string)time() . rand(100, 999),
         ], $input);
 
+        debugLog('POST /contacts - Inserting contact:', $data);
         $result = $db->insert('contacts', $data);
+        
+        // Insert communication channels separately
+        if (!empty($communicationChannels)) {
+            debugLog('POST /contacts - Inserting communication channels:', $communicationChannels);
+            foreach ($communicationChannels as $channel) {
+                // Skip empty channels
+                if (empty($channel['type']) || empty($channel['value'])) {
+                    continue;
+                }
+                
+                $channelData = [
+                    'id' => (string)time() . rand(100, 999),
+                    'contact_id' => $data['id'],
+                    'type' => $channel['type'] ?? '',
+                    'label' => $channel['label'] ?? '',
+                    'value' => $channel['value'] ?? '',
+                    'is_primary' => isset($channel['is_primary']) ? (int)$channel['is_primary'] : 0,
+                ];
+                $db->insert('contact_communication', $channelData);
+            }
+        }
+
+        debugLog('POST /contacts - Success, contact created with ID: ' . $data['id']);
+        sendDebugHeaders();
         http_response_code(201);
         echo json_encode($result);
         exit();
@@ -157,7 +225,51 @@ try {
             exit();
         }
 
+        debugLog('PUT /contacts/' . $id . ' - Input received:', $input);
+
+        // Separate communication channels from contact data
+        $communicationChannels = $input['communicationChannels'] ?? [];
+        unset($input['communicationChannels']);
+
+        // Only allow known contact columns
+        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+                          'company_name', 'salutation', 'contact_person', 'street', 'zip', 
+                          'city', 'alt_street', 'alt_zip', 'alt_city'];
+        $input = array_intersect_key($input, array_flip($allowedFields));
+
+        debugLog('PUT /contacts/' . $id . ' - Updating contact:', $input);
         $result = $db->update('contacts', $id, $input);
+        
+        // Handle communication channels if provided
+        if (isset($communicationChannels)) {
+            debugLog('PUT /contacts/' . $id . ' - Updating communication channels:', $communicationChannels);
+            
+            // Delete existing channels for this contact
+            $conn = $db->getConnection();
+            $stmt = $conn->prepare("DELETE FROM contact_communication WHERE contact_id = ?");
+            $stmt->execute([$id]);
+            
+            // Insert new channels
+            foreach ($communicationChannels as $channel) {
+                // Skip empty channels
+                if (empty($channel['type']) || empty($channel['value'])) {
+                    continue;
+                }
+                
+                $channelData = [
+                    'id' => (string)time() . rand(100, 999),
+                    'contact_id' => $id,
+                    'type' => $channel['type'] ?? '',
+                    'label' => $channel['label'] ?? '',
+                    'value' => $channel['value'] ?? '',
+                    'is_primary' => isset($channel['is_primary']) ? (int)$channel['is_primary'] : 0,
+                ];
+                $db->insert('contact_communication', $channelData);
+            }
+        }
+
+        debugLog('PUT /contacts/' . $id . ' - Success');
+        sendDebugHeaders();
         echo json_encode($result);
         exit();
     }
@@ -309,6 +421,16 @@ try {
     echo json_encode(['error' => 'Not found']);
 
 } catch (Exception $e) {
+    // Log the full error details
+    debugLog('ERROR: ' . $e->getMessage(), [
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+        'trace' => $e->getTraceAsString(),
+        'request_method' => $method,
+        'request_path' => $path,
+        'request_input' => $input
+    ]);
+    
     http_response_code(500);
     echo json_encode([
         'error' => 'Internal server error',
