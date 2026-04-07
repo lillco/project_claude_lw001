@@ -5,6 +5,7 @@ import { AuthProvider } from './hooks/useAuth.jsx'
 import AuthenticatedApp from './components/auth/AuthenticatedApp'
 import './index.css'
 import { isTestEnvironment } from './config/environment'
+import { ThemeProvider } from './hooks/useTheme'
 
 // Set dynamic page title based on environment
 if (isTestEnvironment()) {
@@ -13,10 +14,12 @@ if (isTestEnvironment()) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <AuthenticatedApp>
-        <App />
-      </AuthenticatedApp>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthenticatedApp>
+          <App />
+        </AuthenticatedApp>
+      </AuthProvider>
+    </ThemeProvider>
   </React.StrictMode>,
 )

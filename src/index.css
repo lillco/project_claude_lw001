@@ -12,12 +12,20 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    color: #000000;
+    @apply text-gray-900;
+  }
+
+  .dark body {
+    @apply text-gray-100 bg-gray-900;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
-    color: #000000;
+    @apply text-gray-900;
+  }
+
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-gray-100;
   }
 }
 

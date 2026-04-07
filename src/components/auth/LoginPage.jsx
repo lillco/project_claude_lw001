@@ -40,21 +40,21 @@ export default function LoginPage({ onLogin }) {
       <TestBanner />
       <div className={`flex-1 bg-gradient-to-br ${gradientFrom} ${gradientTo} flex items-center justify-center px-4`}>
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: primaryColor }}>
               <LogIn className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
               Vereinsverwaltung
             </h1>
-            <p className="text-gray-600 mt-2">Bitte melden Sie sich an</p>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Bitte melden Sie sich an</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded">
               {error}
             </div>
           )}
@@ -62,7 +62,7 @@ export default function LoginPage({ onLogin }) {
           {/* Login Form */}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Benutzername
               </label>
               <input
@@ -70,7 +70,7 @@ export default function LoginPage({ onLogin }) {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 style={{ '--tw-ring-color': primaryColor }}
                 placeholder="admin"
                 required
@@ -80,7 +80,7 @@ export default function LoginPage({ onLogin }) {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Passwort
               </label>
               <input
@@ -88,7 +88,7 @@ export default function LoginPage({ onLogin }) {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 style={{ '--tw-ring-color': primaryColor }}
                 placeholder="••••••••"
                 required
@@ -124,14 +124,14 @@ export default function LoginPage({ onLogin }) {
           </form>
 
           {/* Organization Info */}
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             <p className="font-semibold">Lebendiges Weinheim e.V.</p>
             <p className="text-xs mt-1">&copy; {new Date().getFullYear()}</p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-600">
+        <div className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
           Vereinsverwaltung &copy; {new Date().getFullYear()}
         </div>
       </div>

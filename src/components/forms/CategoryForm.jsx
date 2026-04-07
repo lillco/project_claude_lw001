@@ -39,21 +39,21 @@ function CategoryForm({ category, categoryTypes, onSave, onCancel, viewMode, onC
   }
 
   return (
-    <div className="bg-green-50 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
-      <h3 className="text-2xl font-bold mb-4 text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="bg-green-50 dark:bg-gray-800 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
+      <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
         {category ? (viewMode ? 'Kategorie anzeigen' : 'Kategorie bearbeiten') : 'Neue Kategorie'}
       </h3>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Typ *
             </label>
             <select
               name="typeId"
               value={formData.typeId}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               required
               disabled={viewMode || categoryTypes.length === 0}
             >
@@ -67,14 +67,14 @@ function CategoryForm({ category, categoryTypes, onSave, onCancel, viewMode, onC
               ))}
             </select>
             {categoryTypes.length === 0 && (
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Ohne Kategorietypen kann keine Kategorie erstellt werden.
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Name *
             </label>
             <input
@@ -82,7 +82,7 @@ function CategoryForm({ category, categoryTypes, onSave, onCancel, viewMode, onC
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               required
               disabled={viewMode}
               placeholder="z.B. Vorstand, Aktiv, Foerdermitglied"
@@ -90,7 +90,7 @@ function CategoryForm({ category, categoryTypes, onSave, onCancel, viewMode, onC
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Beschreibung
             </label>
             <textarea
@@ -98,7 +98,7 @@ function CategoryForm({ category, categoryTypes, onSave, onCancel, viewMode, onC
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               disabled={viewMode}
               placeholder="Optionale Beschreibung"
             />

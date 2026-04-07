@@ -2,6 +2,7 @@ import React from 'react'
 import { LogOut, User, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth.jsx'
 import logo from '../../assets/logo.jpg'
+import ThemeToggle from '../shared/ThemeToggle'
 
 function Header() {
   const { user, logout } = useAuth()
@@ -27,6 +28,7 @@ function Header() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             {/* Back to Launchpad Link */}
             <a
               href="/"

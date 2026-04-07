@@ -63,7 +63,7 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Name *
         </label>
         <input
@@ -74,13 +74,13 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
           onChange={handleChange}
           required
           disabled={viewMode}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           placeholder="z.B. Bereich, Sparte, Struktur"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Anwendbare Entitaeten
         </label>
         <div className="space-y-2">
@@ -93,7 +93,7 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
                 disabled={viewMode}
                 className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded disabled:opacity-50"
               />
-              <span className="ml-2 text-sm text-gray-700">{entityLabels[entity] || entity}</span>
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{entityLabels[entity] || entity}</span>
             </label>
           ))}
         </div>
@@ -110,7 +110,7 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
           onChange={handleChange}
           rows={3}
           disabled={viewMode}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           placeholder="Optionale Beschreibung des Kategorietyps"
         />
       </div>
@@ -121,7 +121,7 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Schliessen
             </button>
@@ -138,7 +138,7 @@ function CategoryTypeForm({ categoryType, onSave, onCancel, viewMode, onChangeTo
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Abbrechen
             </button>

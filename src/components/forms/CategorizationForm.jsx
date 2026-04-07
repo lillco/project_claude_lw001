@@ -68,13 +68,13 @@ function CategorizationForm({
   }
 
   return (
-    <div className="bg-green-50 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
-      <h3 className="text-2xl font-bold mb-4 text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="bg-green-50 dark:bg-gray-800 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
+      <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
         {categorization ? (viewMode ? 'Kategorisierung anzeigen' : 'Kategorisierung bearbeiten') : 'Neue Kategorisierung'}
       </h3>
 
       {!association?.id && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded">
+        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded">
           Bitte zuerst den Verein speichern, bevor eine Kategorisierung angelegt wird.
         </div>
       )}
@@ -82,32 +82,32 @@ function CategorizationForm({
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Entitaet
             </label>
             <input
               type="text"
               value="Verein"
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Name
             </label>
             <input
               type="text"
               value={association?.name || '-'}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Kategorien
           </label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -116,8 +116,8 @@ function CategorizationForm({
                 key={category.id}
                 className={`flex items-center p-3 border rounded cursor-pointer transition-colors ${
                   formData.selectedCategories.includes(category.id)
-                    ? 'bg-green-100 border-green-500'
-                    : 'bg-white border-gray-300 hover:bg-gray-50'
+                    ? 'bg-green-100 dark:bg-green-900/30 border-green-500'
+                    : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 } ${viewMode ? 'cursor-not-allowed opacity-70' : ''}`}
               >
                 <input
@@ -132,7 +132,7 @@ function CategorizationForm({
             ))}
           </div>
           {categories.length === 0 && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Keine Kategorien verfuegbar. Bitte zuerst Kategorien anlegen.
             </p>
           )}

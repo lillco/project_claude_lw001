@@ -111,11 +111,11 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Stammdaten */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Stammdaten</h4>
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Stammdaten</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Firma / Name *
             </label>
             <input
@@ -124,13 +124,13 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.company_name}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Anrede
             </label>
             <select
@@ -138,7 +138,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.salutation}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="">Bitte wählen...</option>
               <option value="Herr">Herr</option>
@@ -148,7 +148,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ansprechpartner
             </label>
             <input
@@ -157,12 +157,12 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.contact_person}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Status *
             </label>
             <select
@@ -170,7 +170,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.status}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               required
             >
               <option value="active">Aktiv</option>
@@ -180,7 +180,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Eintrittsdatum
             </label>
             <input
@@ -189,12 +189,12 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.entry_date}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Lage
             </label>
             <select
@@ -202,7 +202,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.location_category_id}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="">Bitte wählen...</option>
               {locationCategories.map(cat => (
@@ -214,11 +214,11 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
       </div>
 
       {/* Geschäftsadresse */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Geschäftsadresse</h4>
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Geschäftsadresse</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Straße
             </label>
             <input
@@ -227,12 +227,12 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.street}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               PLZ
             </label>
             <input
@@ -241,13 +241,13 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.zip}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               maxLength="10"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ort
             </label>
             <input
@@ -256,20 +256,20 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.city}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
       </div>
 
       {/* Abweichende Geschäftsadresse */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">
           Abweichende Geschäftsadresse <span className="text-sm font-normal text-gray-500">(optional)</span>
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Straße (abweichend)
             </label>
             <input
@@ -278,12 +278,12 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.alt_street}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               PLZ (abweichend)
             </label>
             <input
@@ -292,13 +292,13 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.alt_zip}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               maxLength="10"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Ort (abweichend)
             </label>
             <input
@@ -307,7 +307,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               value={formData.alt_city}
               onChange={handleChange}
               disabled={viewMode}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
           </div>
         </div>
@@ -315,7 +315,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
 
       {/* Kommunikationskanäle */}
       {!viewMode && (
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
           <CommunicationChannelsTable
             channels={communicationChannels}
             onAdd={handleAddChannel}
@@ -332,7 +332,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Schließen
             </button>
@@ -349,7 +349,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
             >
               <X className="w-4 h-4" />
               Abbrechen

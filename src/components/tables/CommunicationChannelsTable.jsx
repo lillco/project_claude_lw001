@@ -12,7 +12,7 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="text-lg font-semibold text-gray-800">Kommunikationskanäle</h4>
+        <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Kommunikationskanäle</h4>
         <button
           type="button"
           onClick={onAdd}
@@ -25,24 +25,24 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
 
       {channels.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Typ</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bezeichnung</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Wert</th>
-                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Hauptkontakt</th>
-                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Aktion</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Typ</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bezeichnung</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Wert</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Hauptkontakt</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktion</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {channels.map((channel, index) => (
                 <tr key={channel.id || index}>
                   <td className="px-3 py-2">
                     <select
                       value={channel.type}
                       onChange={(e) => onChange(index, 'type', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100"
                     >
                       <option value="">Typ wählen...</option>
                       <option value="phone">Telefon</option>
@@ -56,7 +56,7 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
                       type="text"
                       value={channel.label || ''}
                       onChange={(e) => onChange(index, 'label', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100"
                       placeholder="z.B. Zentrale, Mobil..."
                     />
                   </td>
@@ -65,7 +65,7 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
                       type="text"
                       value={channel.value || ''}
                       onChange={(e) => onChange(index, 'value', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-gray-100"
                       placeholder={
                         channel.type === 'phone' ? '+49 123 456789' :
                         channel.type === 'email' ? 'info@example.de' :
@@ -105,7 +105,7 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
           </table>
         </div>
       ) : (
-        <p className="text-gray-500 text-sm text-center py-4 bg-gray-50 rounded border border-dashed border-gray-300">
+        <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4 bg-gray-50 dark:bg-gray-800 rounded border border-dashed border-gray-300 dark:border-gray-600">
           Noch keine Kommunikationskanäle angelegt. Klicken Sie auf "Kanal hinzufügen".
         </p>
       )}

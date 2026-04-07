@@ -108,17 +108,17 @@ function AssociationForm({ association, onSave, onCancel }) {
   }
 
   return (
-    <div className="bg-green-50 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
-      <h3 className="text-2xl font-bold mb-4 text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="bg-green-50 dark:bg-gray-800 p-6 rounded mb-6 shadow-[6px_6px_9px_rgba(0,0,0,0.1)]">
+      <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
         {association ? 'Verein bearbeiten' : 'Verein anlegen'}
       </h3>
       <form onSubmit={handleSubmit}>
         {/* Firmierung Group */}
-        <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Firmierung</h4>
+        <div className="mb-6 bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+          <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-600 pb-2">Firmierung</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Name *
               </label>
               <input
@@ -126,12 +126,12 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                 required
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Beschreibung
               </label>
               <textarea
@@ -139,11 +139,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 value={formData.description}
                 onChange={handleChange}
                 rows="4"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               ></textarea>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Logo
               </label>
               {logoPreview ? (
@@ -151,7 +151,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                   <img 
                     src={logoPreview} 
                     alt="Logo Preview" 
-                    className="w-32 h-32 object-contain border border-gray-300 rounded"
+                    className="w-32 h-32 object-contain border border-gray-300 dark:border-gray-600 rounded"
                   />
                   <button
                     type="button"
@@ -164,7 +164,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded border border-gray-300 flex items-center gap-2">
+                  <label className="cursor-pointer bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 px-4 py-2 rounded border border-gray-300 dark:border-gray-600 flex items-center gap-2 dark:text-gray-200">
                     <Upload className="w-4 h-4" />
                     <span>Logo hochladen</span>
                     <input
@@ -181,11 +181,11 @@ function AssociationForm({ association, onSave, onCancel }) {
         </div>
 
         {/* Geschäftsstelle Group */}
-        <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Geschäftsstelle</h4>
+        <div className="mb-6 bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+          <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-600 pb-2">Geschäftsstelle</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Straße
               </label>
               <input
@@ -193,11 +193,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="street"
                 value={formData.street}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 PLZ
               </label>
               <input
@@ -205,12 +205,12 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="zip"
                 value={formData.zip}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                 maxLength="10"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Ort
               </label>
               <input
@@ -218,11 +218,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Ansprechpartner
               </label>
               <input
@@ -230,11 +230,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="contact_person"
                 value={formData.contact_person}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Telefonnummer
               </label>
               <input
@@ -242,18 +242,18 @@ function AssociationForm({ association, onSave, onCancel }) {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
         </div>
 
         {/* Web & Social Media Group */}
-        <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Web & Social Media</h4>
+        <div className="mb-6 bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+          <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-600 pb-2">Web & Social Media</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Website
               </label>
               <input
@@ -262,11 +262,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 value={formData.website}
                 onChange={handleChange}
                 placeholder="https://..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 E-Mail
               </label>
               <input
@@ -275,11 +275,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="info@verein.de"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Facebook
               </label>
               <input
@@ -288,11 +288,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 value={formData.facebook}
                 onChange={handleChange}
                 placeholder="https://facebook.com/..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Instagram
               </label>
               <input
@@ -301,16 +301,16 @@ function AssociationForm({ association, onSave, onCancel }) {
                 value={formData.instagram}
                 onChange={handleChange}
                 placeholder="https://instagram.com/..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
           </div>
         </div>
 
         {/* Bankverbindung Group */}
-        <div className="mb-6 bg-white p-4 rounded-lg border border-gray-200">
+        <div className="mb-6 bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
           <div className="flex items-center justify-between mb-4 border-b pb-2">
-            <h4 className="text-lg font-semibold text-gray-800">Bankverbindung</h4>
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Bankverbindung</h4>
             <button
               type="button"
               onClick={handleAddSepaAccount}
@@ -323,18 +323,18 @@ function AssociationForm({ association, onSave, onCancel }) {
           
           {sepaAccounts.length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">IBAN</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">BIC</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Öffentlich</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Verwendung</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aktion</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Bank</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">IBAN</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">BIC</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Öffentlich</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Verwendung</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktion</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
                   {sepaAccounts.map((account, index) => (
                     <tr key={account.id}>
                       <td className="px-3 py-2">
@@ -342,7 +342,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                           type="text"
                           value={account.bank_name}
                           onChange={(e) => handleSepaChange(index, 'bank_name', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="Bankname"
                         />
                       </td>
@@ -351,7 +351,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                           type="text"
                           value={account.iban}
                           onChange={(e) => handleSepaChange(index, 'iban', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="DE..."
                         />
                       </td>
@@ -360,7 +360,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                           type="text"
                           value={account.bic}
                           onChange={(e) => handleSepaChange(index, 'bic', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="BIC"
                         />
                       </td>
@@ -377,7 +377,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                           type="text"
                           value={account.usage_purpose}
                           onChange={(e) => handleSepaChange(index, 'usage_purpose', e.target.value)}
-                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:ring-green-500 focus:border-green-500"
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="Verwendungszweck"
                         />
                       </td>
@@ -396,7 +396,7 @@ function AssociationForm({ association, onSave, onCancel }) {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-sm text-center py-4">
+            <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
               Noch keine Bankverbindungen angelegt. Klicken Sie auf "Konto hinzufügen".
             </p>
           )}

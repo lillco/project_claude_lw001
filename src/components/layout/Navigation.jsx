@@ -28,7 +28,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
   }
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-10">
       <div className="max-w-[1160px] mx-auto px-6">
         <div className="flex justify-between items-center border-b border-gray-200">
           <div className="flex gap-1">
@@ -39,7 +39,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
                 className={`px-6 py-4 font-semibold transition-all relative ${
                   activeGroup === group.id
                     ? 'text-[#76b332] border-b-2 border-[#76b332]'
-                    : 'text-black hover:text-[#76b332] hover:bg-gray-50'
+                    : 'text-gray-900 dark:text-gray-100 hover:text-[#76b332] hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
@@ -57,7 +57,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
                 className={`px-4 py-4 transition-all relative ${
                   activeGroup === group.id
                     ? 'text-[#76b332] border-b-2 border-[#76b332]'
-                    : 'text-gray-600 hover:text-[#76b332] hover:bg-gray-50'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-[#76b332] hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 title="Einstellungen"
               >
@@ -75,7 +75,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
               className={`px-4 py-2 text-sm font-medium rounded transition-all ${
                 activeTab === tab.id
                   ? 'bg-[#76b332] text-white shadow-md'
-                  : 'text-black hover:bg-gray-100'
+                  : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
