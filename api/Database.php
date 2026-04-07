@@ -80,11 +80,6 @@ class Database {
         ";
         $this->conn->exec($sql);
 
-        // Migrate logo column from TEXT to MEDIUMTEXT if needed
-        $this->conn->exec("
-            ALTER TABLE association MODIFY COLUMN logo MEDIUMTEXT
-        ");
-        
         // SEPA accounts table
         $sql = "
             CREATE TABLE IF NOT EXISTS association_sepa (
