@@ -12,7 +12,7 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @apply text-gray-900;
+    @apply text-gray-900 bg-gray-50;
   }
 
   .dark body {
