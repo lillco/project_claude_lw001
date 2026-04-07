@@ -11,7 +11,7 @@ function Header() {
       <div className="max-w-[1160px] mx-auto px-6 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-black/10 border border-black/15 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-[#BAF0DB] border border-black/15 flex items-center justify-center">
               <Building2 className="w-6 h-6 text-black" />
             </div>
             <div>
@@ -25,10 +25,10 @@ function Header() {
             <a
               href="/"
               className="flex items-center gap-2 px-3 py-2 bg-black/10 hover:bg-black/20 rounded transition-colors border border-black/15"
-              title="Zurueck zum Launchpad"
+              title="Zurück zum Launchpad"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Zurueck zum Launchpad</span>
+              <span className="text-sm font-medium">Zurück zum Launchpad</span>
             </a>
 
             <div className="flex items-center gap-3 bg-black/10 px-4 py-2 rounded border border-black/15">
