@@ -65,7 +65,7 @@ class Database {
                 id VARCHAR(50) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 description TEXT,
-                logo TEXT,
+                logo MEDIUMTEXT,
                 street VARCHAR(255),
                 zip VARCHAR(10),
                 city VARCHAR(255),
@@ -79,6 +79,11 @@ class Database {
             )
         ";
         $this->conn->exec($sql);
+
+        // Migrate logo column from TEXT to MEDIUMTEXT if needed
+        $this->conn->exec("
+            ALTER TABLE association MODIFY COLUMN logo MEDIUMTEXT
+        ");
         
         // SEPA accounts table
         $sql = "
