@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-import { isTestEnvironment, TEST_COLOR } from '../config/environment';
+import { isTestEnvironment } from '../config/environment';
 
 /**
  * TestBanner Component
@@ -15,7 +15,7 @@ export default function TestBanner() {
   return (
     <div 
       className="w-full py-3 px-4 text-white font-semibold text-center shadow-md"
-      style={{ backgroundColor: TEST_COLOR }}
+      style={{ backgroundColor: '#F59E0B' }}
     >
       <div className="flex items-center justify-center gap-2">
         <AlertTriangle className="w-5 h-5" />

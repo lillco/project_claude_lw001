@@ -11,6 +11,7 @@ export default function LoginPage({ onLogin }) {
   
   const isTest = isTestEnvironment()
   const primaryColor = isTest ? TEST_COLOR : PROD_COLOR
+  const primaryTextColor = isTest ? '#FFFFFF' : '#000000'
   const gradientFrom = isTest ? 'from-purple-50' : 'from-gray-50'
   const gradientTo = isTest ? 'to-purple-100' : 'to-gray-100'
 
@@ -43,8 +44,8 @@ export default function LoginPage({ onLogin }) {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: primaryColor }}>
-              <LogIn className="w-8 h-8 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 border border-black/15" style={{ backgroundColor: primaryColor }}>
+              <LogIn className="w-8 h-8" style={{ color: primaryTextColor }} />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" style={{ fontFamily: "'Inter', sans-serif" }}>
               Vereinsverwaltung
@@ -100,10 +101,11 @@ export default function LoginPage({ onLogin }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-white py-3 rounded font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-black/20"
               style={{ 
                 fontFamily: "'Inter', sans-serif",
                 backgroundColor: primaryColor,
+                color: primaryTextColor,
                 opacity: loading ? 0.5 : 1
               }}
               onMouseEnter={(e) => !loading && (e.currentTarget.style.opacity = '0.9')}
@@ -111,7 +113,7 @@ export default function LoginPage({ onLogin }) {
             >
               {loading ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
                   <span>Anmelden...</span>
                 </>
               ) : (

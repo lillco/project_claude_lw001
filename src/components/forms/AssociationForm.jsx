@@ -314,7 +314,7 @@ function AssociationForm({ association, onSave, onCancel }) {
             <button
               type="button"
               onClick={handleAddSepaAccount}
-              className="bg-[#76b332] text-white px-3 py-1 rounded text-sm hover:bg-[#5a8a28] flex items-center gap-1"
+              className="bg-[#BAF0DB] text-black border border-black/20 px-3 py-1 rounded text-sm hover:bg-[#a8dec9] flex items-center gap-1"
             >
               <Plus className="w-4 h-4" />
               Konto hinzufügen
@@ -405,7 +405,7 @@ function AssociationForm({ association, onSave, onCancel }) {
         <div className="flex gap-3">
           <button
             type="submit"
-            className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] flex items-center gap-2 font-semibold transition-colors"
+            className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] flex items-center gap-2 font-semibold transition-colors"
           >
             <Save className="w-5 h-5" />
             Speichern
@@ -425,3 +425,4 @@ function AssociationForm({ association, onSave, onCancel }) {
 }
 
 export default AssociationForm
+

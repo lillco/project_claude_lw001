@@ -356,7 +356,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#76b332] text-white rounded-md hover:bg-[#5a8a28] flex items-center gap-2"
+              className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {contact ? 'Aktualisieren' : 'Erstellen'}
@@ -369,3 +369,4 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
 }
 
 export default ContactForm
+

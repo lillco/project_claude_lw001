@@ -38,8 +38,8 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
                 onClick={() => handleGroupChange(group.id)}
                 className={`px-6 py-4 font-semibold transition-all relative ${
                   activeGroup === group.id
-                    ? 'text-[#76b332] border-b-2 border-[#76b332]'
-                    : 'text-gray-900 dark:text-gray-100 hover:text-[#76b332] hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ? 'text-black border-b-2 border-black'
+                    : 'text-gray-900 dark:text-gray-100 hover:text-black hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
@@ -56,8 +56,8 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
                 onClick={() => handleGroupChange(group.id)}
                 className={`px-4 py-4 transition-all relative ${
                   activeGroup === group.id
-                    ? 'text-[#76b332] border-b-2 border-[#76b332]'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-[#76b332] hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ? 'text-black border-b-2 border-black'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-black hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
                 title="Einstellungen"
               >
@@ -74,7 +74,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
               onClick={() => onTabChange(tab.id)}
               className={`px-4 py-2 text-sm font-medium rounded transition-all ${
                 activeTab === tab.id
-                  ? 'bg-[#76b332] text-white shadow-md'
+                  ? 'bg-[#BAF0DB] text-black border border-black/20 shadow-[0_6px_14px_rgba(0,0,0,0.12)]'
                   : 'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               style={{ fontFamily: "'Inter', sans-serif" }}
@@ -89,3 +89,4 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
 }
 
 export default Navigation
+

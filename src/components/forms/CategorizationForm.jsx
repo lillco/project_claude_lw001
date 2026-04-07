@@ -143,7 +143,7 @@ function CategorizationForm({
             <button
               type="submit"
               disabled={!association?.id}
-              className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold transition-colors"
+              className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold transition-colors"
             >
               <Save className="w-5 h-5" />
               Speichern
@@ -153,7 +153,7 @@ function CategorizationForm({
             <button
               type="button"
               onClick={onChangeToEdit}
-              className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] flex items-center gap-2 font-semibold transition-colors"
+              className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] flex items-center gap-2 font-semibold transition-colors"
             >
               <Edit className="w-5 h-5" />
               Aendern
@@ -174,3 +174,4 @@ function CategorizationForm({
 }
 
 export default CategorizationForm
+

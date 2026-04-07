@@ -122,7 +122,7 @@ function ContactsTable({ contacts, contactType, onEdit, onDelete, onRowClick, sh
                         e.stopPropagation()
                         onEdit(contact.id)
                       }}
-                      className="text-[#76b332] hover:text-[#5a8a28] mr-3"
+                      className="text-black hover:text-[#a8dec9] mr-3"
                       title="Bearbeiten"
                     >
                       <Edit className="w-5 h-5" />
@@ -154,3 +154,4 @@ function ContactsTable({ contacts, contactType, onEdit, onDelete, onRowClick, sh
 }
 
 export default ContactsTable
+

@@ -16,7 +16,7 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
         <button
           type="button"
           onClick={onAdd}
-          className="bg-[#76b332] text-white px-3 py-1 rounded text-sm hover:bg-[#5a8a28] flex items-center gap-1"
+          className="bg-[#BAF0DB] text-black border border-black/20 px-3 py-1 rounded text-sm hover:bg-[#a8dec9] flex items-center gap-1"
         >
           <Plus className="w-4 h-4" />
           Kanal hinzufügen
@@ -114,3 +114,4 @@ function CommunicationChannelsTable({ channels, onAdd, onChange, onRemove }) {
 }
 
 export default CommunicationChannelsTable
+

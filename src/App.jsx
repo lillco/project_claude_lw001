@@ -335,8 +335,8 @@ function App() {
           <div>
             {association ? (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Firmierung</h3>
+                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Firmierung</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {association.logo && (
                       <div className="md:col-span-2">
@@ -365,8 +365,8 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Geschaeftsstelle</h3>
+                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Geschaeftsstelle</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -401,8 +401,8 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Web und Social Media</h3>
+                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Web und Social Media</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-500 mb-1">
@@ -455,8 +455,8 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-6">
-                  <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Bankverbindung</h3>
+                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Bankverbindung</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                     SEPA-Konten werden hier angezeigt (noch nicht implementiert)
                   </p>
@@ -467,7 +467,7 @@ function App() {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">Noch kein Verein angelegt.</p>
                 <button
                   onClick={handleAdd}
-                  className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors font-semibold"
+                  className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] transition-colors font-semibold"
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   Verein anlegen
@@ -550,7 +550,7 @@ function App() {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#76b332] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Lade Daten...</p>
         </div>
       </div>
@@ -564,7 +564,7 @@ function App() {
           <p className="text-red-600 mb-4">Fehler beim Laden der Daten: {api.error}</p>
           <button
             onClick={api.reload}
-            className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28]"
+            className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9]"
           >
             Erneut versuchen
           </button>
@@ -601,7 +601,7 @@ function App() {
             {activeTab === 'verein' && association && (
               <button
                 onClick={handleAdd}
-                className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors flex items-center gap-2 font-semibold"
+                className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] transition-colors flex items-center gap-2 font-semibold"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 <Edit className="w-5 h-5" />
@@ -612,7 +612,7 @@ function App() {
             {(contactTabs.includes(activeTab) || settingsTabs.includes(activeTab)) && (
               <button
                 onClick={handleAdd}
-                className="bg-[#76b332] text-white px-6 py-3 rounded shadow-md hover:bg-[#5a8a28] transition-colors flex items-center gap-2 font-semibold"
+                className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] transition-colors flex items-center gap-2 font-semibold"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 <Plus className="w-5 h-5" />
@@ -638,3 +638,5 @@ function App() {
 }
 
 export default App
+
+

@@ -9,6 +9,6 @@ export const isTestEnvironment = () => {
   return window.location.hostname === 'lwtest.lillco.de';
 };
 
-// Test environment color (complementary color to #76b332)
+// Test environment color (complementary color to #BAF0DB)
 export const TEST_COLOR = '#6632b3';
-export const PROD_COLOR = '#76b332';
+export const PROD_COLOR = '#BAF0DB';
