@@ -12,8 +12,8 @@ export default function LoginPage({ onLogin }) {
   const isTest = isTestEnvironment()
   const primaryColor = isTest ? TEST_COLOR : PROD_COLOR
   const primaryTextColor = isTest ? '#FFFFFF' : '#000000'
-  const gradientFrom = isTest ? 'from-purple-50' : 'from-gray-50'
-  const gradientTo = isTest ? 'to-purple-100' : 'to-gray-100'
+  const gradientFrom = 'from-[#eaf9f1]'
+  const gradientTo = 'to-[#c6ebd9]'
 
   const handleSubmit = async (e) => {
     e.preventDefault()

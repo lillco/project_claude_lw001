@@ -56,7 +56,7 @@ function CategorizationsTable({ categorizations, categories, association, onEdit
   if (categorizations.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        Keine Kategorisierungen vorhanden. Klicken Sie auf "Neu hinzufuegen", um eine Kategorisierung anzulegen.
+        Keine Kategorisierungen vorhanden. Klicken Sie auf "Neu hinzufügen", um eine Kategorisierung anzulegen.
       </div>
     )
   }
@@ -158,7 +158,7 @@ function CategorizationsTable({ categorizations, categories, association, onEdit
                 </button>
                 <button
                   onClick={() => {
-                    if (confirm(`Alle ${item.categories.length} Kategorisierung(en) fuer "${item.entityName}" loeschen?`)) {
+                    if (confirm(`Alle ${item.categories.length} Kategorisierung(en) für "${item.entityName}" löschen?`)) {
                       item.ids.forEach(id => onDelete(id))
                     }
                   }}

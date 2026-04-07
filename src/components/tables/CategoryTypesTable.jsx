@@ -18,7 +18,7 @@ function CategoryTypesTable({ categoryTypes, onEdit, onDelete, onRowClick, showS
   if (categoryTypes.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        Keine Kategorietypen vorhanden. Klicken Sie auf "Neu hinzufuegen", um einen Typ anzulegen.
+        Keine Kategorietypen vorhanden. Klicken Sie auf "Neu hinzufügen", um einen Typ anzulegen.
       </div>
     )
   }

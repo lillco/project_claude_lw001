@@ -31,7 +31,7 @@ function CategoriesTable({ categories, onEdit, onDelete, onRowClick, showSearch 
   if (categories.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-        Keine Kategorien vorhanden. Klicken Sie auf "Neu hinzufuegen", um eine Kategorie anzulegen.
+        Keine Kategorien vorhanden. Klicken Sie auf "Neu hinzufügen", um eine Kategorie anzulegen.
       </div>
     )
   }

@@ -153,7 +153,7 @@ function App() {
   }
 
   const handleDelete = (type, id) => {
-    if (confirm('Moechten Sie diesen Eintrag wirklich loeschen?')) {
+    if (confirm('Möchten Sie diesen Eintrag wirklich löschen?')) {
       deleteItem(type, id)
     }
   }
@@ -335,7 +335,7 @@ function App() {
           <div>
             {association ? (
               <div className="space-y-6">
-                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
                   <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Firmierung</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {association.logo && (
@@ -365,12 +365,12 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
                   <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Geschaeftsstelle</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Strasse
+                        Straße
                       </label>
                       <p className="text-lg text-gray-900 dark:text-gray-100">{association.street || '-'}</p>
                     </div>
@@ -401,7 +401,7 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
                   <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Web und Social Media</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -455,7 +455,7 @@ function App() {
                   </div>
                 </div>
 
-                <div className="bg-[#BAF0DB] border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
+                <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
                   <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Bankverbindung</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                     SEPA-Konten werden hier angezeigt (noch nicht implementiert)
@@ -616,7 +616,7 @@ function App() {
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 <Plus className="w-5 h-5" />
-                Neu hinzufuegen
+                Neu hinzufügen
               </button>
             )}
           </div>
