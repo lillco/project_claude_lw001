@@ -95,6 +95,20 @@ class Database {
             )
         ";
         $this->conn->exec($sql);
+
+        // Association communication channels table
+        $sql = "
+            CREATE TABLE IF NOT EXISTS association_communication (
+                id VARCHAR(50) PRIMARY KEY,
+                association_id VARCHAR(50),
+                type VARCHAR(50) NOT NULL,
+                value TEXT NOT NULL,
+                note TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (association_id) REFERENCES association(id) ON DELETE CASCADE
+            )
+        ";
+        $this->conn->exec($sql);
         
         // Category Types table
         $sql = "

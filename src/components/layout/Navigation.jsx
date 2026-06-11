@@ -28,7 +28,7 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
   }
 
   return (
-    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-0 z-10">
+    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="max-w-[1160px] mx-auto px-6">
         <div className="flex justify-between items-center border-b border-gray-200">
           <div className="flex gap-1">

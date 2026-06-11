@@ -44,6 +44,113 @@ function sendDebugHeaders() {
     }
 }
 
+function generateId() {
+    return str_replace('.', '', uniqid('', true));
+}
+
+function pickFields($data, $allowedFields) {
+    if (!$data) {
+        return [];
+    }
+
+    return array_intersect_key($data, array_flip($allowedFields));
+}
+
+function normalizeSepaAccount($account, $associationId) {
+    return [
+        'id' => !empty($account['id']) ? $account['id'] : generateId(),
+        'association_id' => $associationId,
+        'bank_name' => $account['bank_name'] ?? '',
+        'iban' => $account['iban'] ?? '',
+        'bic' => $account['bic'] ?? '',
+        'is_public' => !empty($account['is_public']) ? 1 : 0,
+        'usage_purpose' => $account['usage_purpose'] ?? '',
+    ];
+}
+
+function normalizeSepaRows($rows) {
+    return array_map(function($row) {
+        $row['is_public'] = !empty($row['is_public']);
+        return $row;
+    }, $rows);
+}
+
+function normalizeCommunicationChannel($channel, $associationId) {
+    return [
+        'id' => !empty($channel['id']) ? $channel['id'] : generateId(),
+        'association_id' => $associationId,
+        'type' => $channel['type'] ?? '',
+        'value' => $channel['value'] ?? '',
+        'note' => $channel['note'] ?? '',
+    ];
+}
+
+function attachSepaAccounts($db, $association) {
+    if (!$association) {
+        return null;
+    }
+
+    $association['sepaAccounts'] = normalizeSepaRows(
+        $db->getWhere('association_sepa', 'association_id = ?', [$association['id']])
+    );
+
+    return $association;
+}
+
+function attachCommunicationChannels($db, $association) {
+    if (!$association) {
+        return null;
+    }
+
+    $association['communicationChannels'] = $db->getWhere(
+        'association_communication',
+        'association_id = ?',
+        [$association['id']]
+    );
+
+    return $association;
+}
+
+function attachAssociationDetails($db, $association) {
+    return attachCommunicationChannels($db, attachSepaAccounts($db, $association));
+}
+
+function replaceSepaAccounts($db, $associationId, $accounts) {
+    $conn = $db->getConnection();
+    $stmt = $conn->prepare("DELETE FROM association_sepa WHERE association_id = ?");
+    $stmt->execute([$associationId]);
+
+    $savedAccounts = [];
+    foreach ($accounts as $account) {
+        $normalized = normalizeSepaAccount($account, $associationId);
+        $hasContent = !empty($normalized['bank_name']) || !empty($normalized['iban']) ||
+                      !empty($normalized['bic']) || !empty($normalized['usage_purpose']);
+
+        if ($hasContent) {
+            $savedAccounts[] = $db->insert('association_sepa', $normalized);
+        }
+    }
+
+    return normalizeSepaRows($savedAccounts);
+}
+
+function replaceCommunicationChannels($db, $associationId, $channels) {
+    $conn = $db->getConnection();
+    $stmt = $conn->prepare("DELETE FROM association_communication WHERE association_id = ?");
+    $stmt->execute([$associationId]);
+
+    $savedChannels = [];
+    foreach ($channels as $channel) {
+        $normalized = normalizeCommunicationChannel($channel, $associationId);
+
+        if (!empty($normalized['type']) && !empty($normalized['value'])) {
+            $savedChannels[] = $db->insert('association_communication', $normalized);
+        }
+    }
+
+    return $savedChannels;
+}
+
 // Handle CORS with strict origin validation
 handleCors();
 header('Content-Type: application/json');
@@ -74,7 +181,7 @@ try {
     // Route: GET /association - Get association (single record)
     if ($method === 'GET' && $path === 'association') {
         $result = $db->getFirst('association');
-        echo json_encode($result);
+        echo json_encode(attachAssociationDetails($db, $result));
         exit();
     }
 
@@ -86,24 +193,21 @@ try {
             exit();
         }
 
-        // Separate SEPA accounts from association data
-        $sepaAccounts = $input['sepaAccounts'] ?? null;
-        unset($input['sepaAccounts']);
-        
         // Only allow known association columns
         $allowedFields = ['name', 'description', 'logo', 'street', 'zip', 'city', 
                           'contact_person', 'phone', 'facebook', 'instagram', 'website', 'email'];
-        $input = array_intersect_key($input, array_flip($allowedFields));
+        $associationData = pickFields($input, $allowedFields);
+        $sepaAccounts = $input['sepaAccounts'] ?? [];
+        $communicationChannels = $input['communicationChannels'] ?? [];
 
         // Add ID and timestamp
         $data = array_merge([
-            'id' => (string)time() . rand(100, 999),
-        ], $input);
+            'id' => generateId(),
+        ], $associationData);
 
         $result = $db->insert('association', $data);
-        
-        // TODO: Handle SEPA accounts if provided
-        // if ($sepaAccounts) { ... }
+        $result['sepaAccounts'] = replaceSepaAccounts($db, $result['id'], $sepaAccounts);
+        $result['communicationChannels'] = replaceCommunicationChannels($db, $result['id'], $communicationChannels);
         
         http_response_code(201);
         echo json_encode($result);
@@ -120,21 +224,143 @@ try {
             exit();
         }
 
-        // Separate SEPA accounts from association data
-        $sepaAccounts = $input['sepaAccounts'] ?? null;
-        unset($input['sepaAccounts']);
-        
         // Only allow known association columns
         $allowedFields = ['name', 'description', 'logo', 'street', 'zip', 'city', 
                           'contact_person', 'phone', 'facebook', 'instagram', 'website', 'email'];
-        $input = array_intersect_key($input, array_flip($allowedFields));
+        $associationData = pickFields($input, $allowedFields);
+        $sepaAccounts = $input['sepaAccounts'] ?? null;
+        $communicationChannels = $input['communicationChannels'] ?? null;
 
-        $result = $db->update('association', $id, $input);
-        
-        // TODO: Handle SEPA accounts if provided
-        // if ($sepaAccounts) { ... }
+        $result = !empty($associationData) ? $db->update('association', $id, $associationData) : $db->getById('association', $id);
+        $result['sepaAccounts'] = is_array($sepaAccounts)
+            ? replaceSepaAccounts($db, $id, $sepaAccounts)
+            : normalizeSepaRows($db->getWhere('association_sepa', 'association_id = ?', [$id]));
+        $result['communicationChannels'] = is_array($communicationChannels)
+            ? replaceCommunicationChannels($db, $id, $communicationChannels)
+            : $db->getWhere('association_communication', 'association_id = ?', [$id]);
         
         echo json_encode($result);
+        exit();
+    }
+
+    // Route: GET /association/:id/sepa - Get SEPA accounts for an association
+    if ($method === 'GET' && $segments[0] === 'association' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'sepa') {
+        $result = $db->getWhere('association_sepa', 'association_id = ?', [$segments[1]]);
+        echo json_encode(normalizeSepaRows($result));
+        exit();
+    }
+
+    // Route: POST /association/:id/sepa - Create SEPA account for an association
+    if ($method === 'POST' && $segments[0] === 'association' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'sepa') {
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $allowedFields = ['bank_name', 'iban', 'bic', 'is_public', 'usage_purpose'];
+        $result = $db->insert('association_sepa', normalizeSepaAccount(pickFields($input, $allowedFields), $segments[1]));
+        $result['is_public'] = !empty($result['is_public']);
+
+        http_response_code(201);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: PUT /association_sepa/:id - Update SEPA account
+    if ($method === 'PUT' && $segments[0] === 'association_sepa' && isset($segments[1])) {
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $allowedFields = ['bank_name', 'iban', 'bic', 'is_public', 'usage_purpose'];
+        $data = pickFields($input, $allowedFields);
+        if (array_key_exists('is_public', $data)) {
+            $data['is_public'] = !empty($data['is_public']) ? 1 : 0;
+        }
+
+        if (empty($data)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No valid data provided']);
+            exit();
+        }
+
+        $result = $db->update('association_sepa', $segments[1], $data);
+        $result['is_public'] = !empty($result['is_public']);
+
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: DELETE /association_sepa/:id - Delete SEPA account
+    if ($method === 'DELETE' && $segments[0] === 'association_sepa' && isset($segments[1])) {
+        $id = $segments[1];
+        $db->delete('association_sepa', $id);
+        echo json_encode(['success' => true, 'id' => $id]);
+        exit();
+    }
+
+    // Route: GET /association/:id/communication - Get communication channels for an association
+    if ($method === 'GET' && $segments[0] === 'association' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
+        $result = $db->getWhere('association_communication', 'association_id = ?', [$segments[1]]);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: POST /association/:id/communication - Create communication channel for an association
+    if ($method === 'POST' && $segments[0] === 'association' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $allowedFields = ['type', 'value', 'note'];
+        $data = normalizeCommunicationChannel(pickFields($input, $allowedFields), $segments[1]);
+
+        if (empty($data['type']) || empty($data['value'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Type and value are required']);
+            exit();
+        }
+
+        $result = $db->insert('association_communication', $data);
+
+        http_response_code(201);
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: PUT /association_communication/:id - Update communication channel
+    if ($method === 'PUT' && $segments[0] === 'association_communication' && isset($segments[1])) {
+        if (!$input) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No data provided']);
+            exit();
+        }
+
+        $allowedFields = ['type', 'value', 'note'];
+        $data = pickFields($input, $allowedFields);
+
+        if (empty($data)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'No valid data provided']);
+            exit();
+        }
+
+        $result = $db->update('association_communication', $segments[1], $data);
+
+        echo json_encode($result);
+        exit();
+    }
+
+    // Route: DELETE /association_communication/:id - Delete communication channel
+    if ($method === 'DELETE' && $segments[0] === 'association_communication' && isset($segments[1])) {
+        $id = $segments[1];
+        $db->delete('association_communication', $id);
+        echo json_encode(['success' => true, 'id' => $id]);
         exit();
     }
 
