@@ -28,6 +28,34 @@ function App() {
   const contactTabs = ['organe', 'mitglieder', 'einzelhaendler']
   const settingsTabs = ['category_types', 'categories', 'categorizations']
 
+  const getCommunicationLabel = (type) => {
+    const labels = {
+      telefon: 'Telefon',
+      mobil: 'Mobil',
+      email: 'E-Mail',
+      web: 'Web',
+      insta: 'Instagram',
+      fb: 'Facebook',
+      linkedin: 'LinkedIn',
+      x: 'X',
+      youtube: 'YouTube',
+      sonstiges: 'Sonstiges'
+    }
+
+    return labels[type] || type || '-'
+  }
+
+  const getCommunicationHref = (channel) => {
+    const value = (channel?.value || '').trim()
+    if (!value) return null
+
+    if (channel.type === 'email') return `mailto:${value}`
+    if (channel.type === 'telefon' || channel.type === 'mobil') return `tel:${value.replace(/\s+/g, '')}`
+    if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value
+
+    return `https://${value}`
+  }
+
   const handleGroupChange = (groupId) => {
     setActiveGroup(groupId)
     setEditingId(null)
@@ -392,74 +420,79 @@ function App() {
                       </label>
                       <p className="text-lg text-gray-900 dark:text-gray-100">{association.contact_person || '-'}</p>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Telefonnummer
-                      </label>
-                      <p className="text-lg text-gray-900 dark:text-gray-100">{association.phone || '-'}</p>
-                    </div>
                   </div>
                 </div>
 
                 <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
-                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Web und Social Media</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Website
-                      </label>
-                      {association.website ? (
-                        <a href={association.website} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 dark:text-blue-400 hover:underline">
-                          {association.website}
-                        </a>
-                      ) : (
-                        <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
-                      )}
+                  <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Kommunikation</h3>
+                  {association.communicationChannels?.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Typ</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Link oder Wert</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Notiz</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {association.communicationChannels.map((channel) => {
+                            const href = getCommunicationHref(channel)
+
+                            return (
+                              <tr key={channel.id}>
+                                <td className="px-3 py-3 text-sm text-gray-900">{getCommunicationLabel(channel.type)}</td>
+                                <td className="px-3 py-3 text-sm">
+                                  {href ? (
+                                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      {channel.value}
+                                    </a>
+                                  ) : (
+                                    <span className="text-gray-900">-</span>
+                                  )}
+                                </td>
+                                <td className="px-3 py-3 text-sm text-gray-900">{channel.note || '-'}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        E-Mail
-                      </label>
-                      {association.email ? (
-                        <a href={`mailto:${association.email}`} className="text-lg text-blue-600 dark:text-blue-400 hover:underline">
-                          {association.email}
-                        </a>
-                      ) : (
-                        <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Facebook
-                      </label>
-                      {association.facebook ? (
-                        <a href={association.facebook} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 dark:text-blue-400 hover:underline">
-                          {association.facebook}
-                        </a>
-                      ) : (
-                        <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Instagram
-                      </label>
-                      {association.instagram ? (
-                        <a href={association.instagram} target="_blank" rel="noopener noreferrer" className="text-lg text-blue-600 dark:text-blue-400 hover:underline">
-                          {association.instagram}
-                        </a>
-                      ) : (
-                        <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
-                      )}
-                    </div>
-                  </div>
+                  ) : (
+                    <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
+                  )}
                 </div>
 
                 <div className="bg-white border border-black/15 rounded-lg shadow-[0_8px_18px_rgba(0,0,0,0.12)] p-6">
                   <h3 className="text-xl font-semibold mb-4 text-black border-b border-black/20 pb-2">Bankverbindung</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    SEPA-Konten werden hier angezeigt (noch nicht implementiert)
-                  </p>
+                  {association.sepaAccounts?.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Bank</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">IBAN</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">BIC</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Oeffentlich</th>
+                            <th className="px-3 py-2 text-left text-xs font-medium uppercase text-gray-500">Verwendung</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {association.sepaAccounts.map((account) => (
+                            <tr key={account.id}>
+                              <td className="px-3 py-3 text-sm text-gray-900">{account.bank_name || '-'}</td>
+                              <td className="px-3 py-3 font-mono text-sm text-gray-900">{account.iban || '-'}</td>
+                              <td className="px-3 py-3 font-mono text-sm text-gray-900">{account.bic || '-'}</td>
+                              <td className="px-3 py-3 text-sm text-gray-900">{account.is_public ? 'Ja' : 'Nein'}</td>
+                              <td className="px-3 py-3 text-sm text-gray-900">{account.usage_purpose || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-lg text-gray-900 dark:text-gray-100">-</p>
+                  )}
                 </div>
               </div>
             ) : (

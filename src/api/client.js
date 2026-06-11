@@ -65,6 +65,48 @@ export const associationAPI = {
 }
 
 /**
+ * Association SEPA Accounts API
+ */
+export const associationSepaAPI = {
+  getAll: (associationId) => apiRequest(`/association/${associationId}/sepa`),
+
+  create: (associationId, data) => apiRequest(`/association/${associationId}/sepa`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  update: (id, data) => apiRequest(`/association_sepa/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  delete: (id) => apiRequest(`/association_sepa/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+/**
+ * Association Communication API
+ */
+export const associationCommunicationAPI = {
+  getAll: (associationId) => apiRequest(`/association/${associationId}/communication`),
+
+  create: (associationId, data) => apiRequest(`/association/${associationId}/communication`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }),
+
+  update: (id, data) => apiRequest(`/association_communication/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
+
+  delete: (id) => apiRequest(`/association_communication/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+/**
  * Category Types API
  */
 export const categoryTypesAPI = {

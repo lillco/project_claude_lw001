@@ -25,10 +25,124 @@ const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next)
 }
 
+const associationFields = [
+  'name',
+  'description',
+  'logo',
+  'street',
+  'zip',
+  'city',
+  'contact_person',
+  'phone',
+  'facebook',
+  'instagram',
+  'website',
+  'email'
+]
+
+const sepaFields = [
+  'bank_name',
+  'iban',
+  'bic',
+  'is_public',
+  'usage_purpose'
+]
+
+const communicationFields = [
+  'type',
+  'value',
+  'note'
+]
+
+const pickFields = (data, fields) => Object.fromEntries(
+  Object.entries(data || {}).filter(([key]) => fields.includes(key))
+)
+
+const normalizeSepaAccount = (account, associationId) => ({
+  id: account.id || `${generateId()}_${Math.floor(Math.random() * 1000000)}`,
+  association_id: associationId,
+  bank_name: account.bank_name || '',
+  iban: account.iban || '',
+  bic: account.bic || '',
+  is_public: account.is_public ? 1 : 0,
+  usage_purpose: account.usage_purpose || ''
+})
+
+const normalizeCommunicationChannel = (channel, associationId) => ({
+  id: channel.id || `${generateId()}_${Math.floor(Math.random() * 1000000)}`,
+  association_id: associationId,
+  type: channel.type || '',
+  value: channel.value || '',
+  note: channel.note || ''
+})
+
+const attachSepaAccounts = async (association) => {
+  if (!association) return null
+
+  const accounts = await database.getWhere('association_sepa', 'association_id = ?', [association.id])
+  return {
+    ...association,
+    sepaAccounts: accounts.map(account => ({
+      ...account,
+      is_public: Boolean(account.is_public)
+    }))
+  }
+}
+
+const attachCommunicationChannels = async (association) => {
+  if (!association) return null
+
+  const channels = await database.getWhere('association_communication', 'association_id = ?', [association.id])
+  return {
+    ...association,
+    communicationChannels: channels
+  }
+}
+
+const attachAssociationDetails = async (association) => {
+  const withSepa = await attachSepaAccounts(association)
+  return await attachCommunicationChannels(withSepa)
+}
+
+const replaceSepaAccounts = async (associationId, accounts = []) => {
+  await database.query('DELETE FROM association_sepa WHERE association_id = ?', [associationId])
+
+  const savedAccounts = []
+  for (const account of accounts) {
+    const normalized = normalizeSepaAccount(account, associationId)
+    const hasContent = normalized.bank_name || normalized.iban || normalized.bic || normalized.usage_purpose
+
+    if (hasContent) {
+      const saved = await database.insert('association_sepa', normalized)
+      savedAccounts.push({
+        ...saved,
+        is_public: Boolean(saved.is_public)
+      })
+    }
+  }
+
+  return savedAccounts
+}
+
+const replaceCommunicationChannels = async (associationId, channels = []) => {
+  await database.query('DELETE FROM association_communication WHERE association_id = ?', [associationId])
+
+  const savedChannels = []
+  for (const channel of channels) {
+    const normalized = normalizeCommunicationChannel(channel, associationId)
+
+    if (normalized.type && normalized.value) {
+      savedChannels.push(await database.insert('association_communication', normalized))
+    }
+  }
+
+  return savedChannels
+}
+
 // GET association (single record)
 app.get('/api/association', asyncHandler(async (req, res) => {
   const data = await database.getFirst('association')
-  res.json(data)
+  res.json(await attachAssociationDetails(data))
 }))
 
 // POST - Create association (first time)
@@ -39,14 +153,22 @@ app.post('/api/association', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'No data provided' })
   }
 
+  const { sepaAccounts = [], communicationChannels = [] } = data
+
   // Add ID and timestamp
   const newData = {
     id: generateId(),
-    ...data
+    ...pickFields(data, associationFields)
   }
 
   const result = await database.insert('association', newData)
-  res.status(201).json(result)
+  const savedSepaAccounts = await replaceSepaAccounts(result.id, sepaAccounts)
+  const savedCommunicationChannels = await replaceCommunicationChannels(result.id, communicationChannels)
+  res.status(201).json({
+    ...result,
+    sepaAccounts: savedSepaAccounts,
+    communicationChannels: savedCommunicationChannels
+  })
 }))
 
 // PUT - Update association
@@ -58,8 +180,118 @@ app.put('/api/association/:id', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'No data provided' })
   }
 
-  const result = await database.update('association', id, data)
+  const { sepaAccounts, communicationChannels } = data
+  const associationData = pickFields(data, associationFields)
+  const result = Object.keys(associationData).length > 0
+    ? await database.update('association', id, associationData)
+    : await database.getById('association', id)
+  const savedSepaAccounts = Array.isArray(sepaAccounts)
+    ? await replaceSepaAccounts(id, sepaAccounts)
+    : await database.getWhere('association_sepa', 'association_id = ?', [id])
+  const savedCommunicationChannels = Array.isArray(communicationChannels)
+    ? await replaceCommunicationChannels(id, communicationChannels)
+    : await database.getWhere('association_communication', 'association_id = ?', [id])
+
+  res.json({
+    ...result,
+    sepaAccounts: savedSepaAccounts.map(account => ({
+      ...account,
+      is_public: Boolean(account.is_public)
+    })),
+    communicationChannels: savedCommunicationChannels
+  })
+}))
+
+// GET SEPA accounts for an association
+app.get('/api/association/:id/sepa', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const accounts = await database.getWhere('association_sepa', 'association_id = ?', [id])
+  res.json(accounts.map(account => ({
+    ...account,
+    is_public: Boolean(account.is_public)
+  })))
+}))
+
+// POST - Add SEPA account
+app.post('/api/association/:id/sepa', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const data = pickFields(req.body, sepaFields)
+  const result = await database.insert('association_sepa', normalizeSepaAccount(data, id))
+  res.status(201).json({
+    ...result,
+    is_public: Boolean(result.is_public)
+  })
+}))
+
+// PUT - Update SEPA account
+app.put('/api/association_sepa/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const data = pickFields(req.body, sepaFields)
+  const payload = {
+    ...data
+  }
+
+  if (Object.prototype.hasOwnProperty.call(payload, 'is_public')) {
+    payload.is_public = payload.is_public ? 1 : 0
+  }
+
+  if (Object.keys(payload).length === 0) {
+    return res.status(400).json({ error: 'No valid data provided' })
+  }
+
+  const result = await database.update('association_sepa', id, payload)
+  res.json({
+    ...result,
+    is_public: Boolean(result.is_public)
+  })
+}))
+
+// DELETE - Delete SEPA account
+app.delete('/api/association_sepa/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  await database.delete('association_sepa', id)
+  res.json({ success: true, id })
+}))
+
+// GET communication channels for an association
+app.get('/api/association/:id/communication', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const channels = await database.getWhere('association_communication', 'association_id = ?', [id])
+  res.json(channels)
+}))
+
+// POST - Add communication channel
+app.post('/api/association/:id/communication', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const data = pickFields(req.body, communicationFields)
+  const normalized = normalizeCommunicationChannel(data, id)
+
+  if (!normalized.type || !normalized.value) {
+    return res.status(400).json({ error: 'Type and value are required' })
+  }
+
+  const result = await database.insert('association_communication', normalized)
+  res.status(201).json(result)
+}))
+
+// PUT - Update communication channel
+app.put('/api/association_communication/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  const data = pickFields(req.body, communicationFields)
+
+  if (Object.keys(data).length === 0) {
+    return res.status(400).json({ error: 'No valid data provided' })
+  }
+
+  const result = await database.update('association_communication', id, data)
   res.json(result)
+}))
+
+// DELETE - Delete communication channel
+app.delete('/api/association_communication/:id', asyncHandler(async (req, res) => {
+  const { id } = req.params
+  await database.delete('association_communication', id)
+  res.json({ success: true, id })
 }))
 
 // ===== CONTACTS ENDPOINTS =====

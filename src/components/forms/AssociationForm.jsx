@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Save, X, Upload, Plus, Trash2 } from 'lucide-react'
 
+const communicationTypes = [
+  { value: 'telefon', label: 'Telefon' },
+  { value: 'mobil', label: 'Mobil' },
+  { value: 'email', label: 'E-Mail' },
+  { value: 'web', label: 'Web' },
+  { value: 'insta', label: 'Instagram' },
+  { value: 'fb', label: 'Facebook' },
+  { value: 'linkedin', label: 'LinkedIn' },
+  { value: 'x', label: 'X' },
+  { value: 'youtube', label: 'YouTube' },
+  { value: 'sonstiges', label: 'Sonstiges' }
+]
+
 function AssociationForm({ association, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -9,15 +22,11 @@ function AssociationForm({ association, onSave, onCancel }) {
     street: '',
     zip: '',
     city: '',
-    contact_person: '',
-    phone: '',
-    facebook: '',
-    instagram: '',
-    website: '',
-    email: ''
+    contact_person: ''
   })
 
   const [sepaAccounts, setSepaAccounts] = useState([])
+  const [communicationChannels, setCommunicationChannels] = useState([])
   const [logoPreview, setLogoPreview] = useState('')
 
   useEffect(() => {
@@ -29,18 +38,27 @@ function AssociationForm({ association, onSave, onCancel }) {
         street: association.street || '',
         zip: association.zip || '',
         city: association.city || '',
-        contact_person: association.contact_person || '',
-        phone: association.phone || '',
-        facebook: association.facebook || '',
-        instagram: association.instagram || '',
-        website: association.website || '',
-        email: association.email || ''
+        contact_person: association.contact_person || ''
       })
       setLogoPreview(association.logo || '')
-      // TODO: Load SEPA accounts from database
-      setSepaAccounts([])
+      setSepaAccounts(Array.isArray(association.sepaAccounts) ? association.sepaAccounts : [])
+      setCommunicationChannels(getInitialCommunicationChannels(association))
     }
   }, [association])
+
+  const getInitialCommunicationChannels = (data) => {
+    if (Array.isArray(data.communicationChannels) && data.communicationChannels.length > 0) {
+      return data.communicationChannels
+    }
+
+    return [
+      data.phone ? { type: 'telefon', value: data.phone, note: '' } : null,
+      data.email ? { type: 'email', value: data.email, note: '' } : null,
+      data.website ? { type: 'web', value: data.website, note: '' } : null,
+      data.instagram ? { type: 'insta', value: data.instagram, note: '' } : null,
+      data.facebook ? { type: 'fb', value: data.facebook, note: '' } : null
+    ].filter(Boolean)
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -77,7 +95,6 @@ function AssociationForm({ association, onSave, onCancel }) {
     setSepaAccounts([
       ...sepaAccounts,
       {
-        id: `temp_${Date.now()}`,
         bank_name: '',
         iban: '',
         bic: '',
@@ -98,12 +115,35 @@ function AssociationForm({ association, onSave, onCancel }) {
     setSepaAccounts(updated)
   }
 
+  const handleAddCommunicationChannel = () => {
+    setCommunicationChannels([
+      ...communicationChannels,
+      {
+        type: 'telefon',
+        value: '',
+        note: ''
+      }
+    ])
+  }
+
+  const handleCommunicationChange = (index, field, value) => {
+    const updated = [...communicationChannels]
+    updated[index][field] = value
+    setCommunicationChannels(updated)
+  }
+
+  const handleRemoveCommunicationChannel = (index) => {
+    const updated = communicationChannels.filter((_, i) => i !== index)
+    setCommunicationChannels(updated)
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
     // Include SEPA accounts in the save data
     onSave({
       ...formData,
-      sepaAccounts
+      sepaAccounts,
+      communicationChannels
     })
   }
 
@@ -233,78 +273,85 @@ function AssociationForm({ association, onSave, onCancel }) {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Telefonnummer
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
-              />
-            </div>
           </div>
         </div>
 
-        {/* Web & Social Media Group */}
+        {/* Communication Group */}
         <div className="mb-6 bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-600 pb-2">Web & Social Media</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Website
-              </label>
-              <input
-                type="url"
-                name="website"
-                value={formData.website}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                E-Mail
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="info@verein.de"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Facebook
-              </label>
-              <input
-                type="url"
-                name="facebook"
-                value={formData.facebook}
-                onChange={handleChange}
-                placeholder="https://facebook.com/..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Instagram
-              </label>
-              <input
-                type="url"
-                name="instagram"
-                value={formData.instagram}
-                onChange={handleChange}
-                placeholder="https://instagram.com/..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
-              />
-            </div>
+          <div className="flex items-center justify-between mb-4 border-b pb-2">
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Kommunikation</h4>
+            <button
+              type="button"
+              onClick={handleAddCommunicationChannel}
+              className="bg-[#BAF0DB] text-black border border-black/20 px-3 py-1 rounded text-sm hover:bg-[#a8dec9] flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Kanal hinzufuegen
+            </button>
           </div>
+
+          {communicationChannels.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Typ</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Link oder Wert</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notiz</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                  {communicationChannels.map((channel, index) => (
+                    <tr key={channel.id || index}>
+                      <td className="px-3 py-2">
+                        <select
+                          value={channel.type || 'telefon'}
+                          onChange={(e) => handleCommunicationChange(index, 'type', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
+                        >
+                          {communicationTypes.map((type) => (
+                            <option key={type.value} value={type.value}>{type.label}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={channel.value || ''}
+                          onChange={(e) => handleCommunicationChange(index, 'value', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
+                          placeholder="https://..., info@..., +49 ..."
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={channel.note || ''}
+                          onChange={(e) => handleCommunicationChange(index, 'note', e.target.value)}
+                          className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
+                          placeholder="Notiz"
+                        />
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCommunicationChannel(index)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
+              Noch keine Kommunikationsdaten angelegt. Klicken Sie auf "Kanal hinzufuegen".
+            </p>
+          )}
         </div>
 
         {/* Bankverbindung Group */}
@@ -336,11 +383,11 @@ function AssociationForm({ association, onSave, onCancel }) {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
                   {sepaAccounts.map((account, index) => (
-                    <tr key={account.id}>
+                    <tr key={account.id || index}>
                       <td className="px-3 py-2">
                         <input
                           type="text"
-                          value={account.bank_name}
+                          value={account.bank_name || ''}
                           onChange={(e) => handleSepaChange(index, 'bank_name', e.target.value)}
                           className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="Bankname"
@@ -349,7 +396,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                       <td className="px-3 py-2">
                         <input
                           type="text"
-                          value={account.iban}
+                          value={account.iban || ''}
                           onChange={(e) => handleSepaChange(index, 'iban', e.target.value)}
                           className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="DE..."
@@ -358,7 +405,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                       <td className="px-3 py-2">
                         <input
                           type="text"
-                          value={account.bic}
+                          value={account.bic || ''}
                           onChange={(e) => handleSepaChange(index, 'bic', e.target.value)}
                           className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="BIC"
@@ -367,7 +414,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                       <td className="px-3 py-2 text-center">
                         <input
                           type="checkbox"
-                          checked={account.is_public}
+                          checked={Boolean(account.is_public)}
                           onChange={(e) => handleSepaChange(index, 'is_public', e.target.checked)}
                           className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                         />
@@ -375,7 +422,7 @@ function AssociationForm({ association, onSave, onCancel }) {
                       <td className="px-3 py-2">
                         <input
                           type="text"
-                          value={account.usage_purpose}
+                          value={account.usage_purpose || ''}
                           onChange={(e) => handleSepaChange(index, 'usage_purpose', e.target.value)}
                           className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100"
                           placeholder="Verwendungszweck"
