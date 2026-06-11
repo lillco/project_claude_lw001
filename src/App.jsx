@@ -576,14 +576,16 @@ function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <TestBanner />
-      <Header />
+      <div className="md:sticky md:top-0 md:z-40">
+        <Header />
 
-      <Navigation
-        activeGroup={activeGroup}
-        activeTab={activeTab}
-        onGroupChange={handleGroupChange}
-        onTabChange={handleTabChange}
-      />
+        <Navigation
+          activeGroup={activeGroup}
+          activeTab={activeTab}
+          onGroupChange={handleGroupChange}
+          onTabChange={handleTabChange}
+        />
+      </div>
 
       <main className="max-w-[1160px] mx-auto px-6 py-8">
         <div>
