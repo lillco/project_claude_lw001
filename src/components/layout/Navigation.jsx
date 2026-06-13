@@ -12,7 +12,8 @@ function Navigation({ activeGroup, activeTab, onGroupChange, onTabChange }) {
       { id: 'verein', label: 'Verein' },
       { id: 'organe', label: 'Organe' },
       { id: 'mitglieder', label: 'Mitglieder' },
-      { id: 'einzelhaendler', label: 'Einzelhändler' }
+      { id: 'einzelhaendler', label: 'Einzelhändler' },
+      { id: 'marktbeschicker', label: 'Marktbeschicker' }
     ],
     einstellungen: [
       { id: 'categories', label: 'Kategorien' },

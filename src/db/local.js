@@ -9,7 +9,9 @@ import { database } from './database.js'
 import { generateId } from '../utils/dataHelpers.js'
 
 const app = express()
-const PORT = 3000
+// Port 3002: must not collide with lw002 (3000) and lw003 (3001),
+// because lw002's Einzelhandelsplanung reads contacts from this server
+const PORT = process.env.PORT || 3002
 
 // Middleware
 app.use(cors())
@@ -52,6 +54,29 @@ const communicationFields = [
   'type',
   'value',
   'note'
+]
+
+const contactFields = [
+  'contact_type',
+  'location_category_id',
+  'status',
+  'entry_date',
+  'company_name',
+  'salutation',
+  'contact_person',
+  'street',
+  'zip',
+  'city',
+  'alt_street',
+  'alt_zip',
+  'alt_city'
+]
+
+const contactChannelFields = [
+  'type',
+  'label',
+  'value',
+  'is_primary'
 ]
 
 const pickFields = (data, fields) => Object.fromEntries(
@@ -102,6 +127,31 @@ const attachCommunicationChannels = async (association) => {
 const attachAssociationDetails = async (association) => {
   const withSepa = await attachSepaAccounts(association)
   return await attachCommunicationChannels(withSepa)
+}
+
+const normalizeContactChannel = (channel, contactId) => ({
+  id: channel.id && !String(channel.id).startsWith('temp_')
+    ? channel.id
+    : `${generateId()}_${Math.floor(Math.random() * 1000000)}`,
+  contact_id: contactId,
+  type: channel.type || '',
+  label: channel.label || '',
+  value: channel.value || '',
+  is_primary: channel.is_primary ? 1 : 0
+})
+
+const replaceContactChannels = async (contactId, channels = []) => {
+  await database.query('DELETE FROM contact_communication WHERE contact_id = ?', [contactId])
+
+  const savedChannels = []
+  for (const channel of channels) {
+    const normalized = normalizeContactChannel(channel, contactId)
+    if (normalized.type && normalized.value) {
+      savedChannels.push(await database.insert('contact_communication', normalized))
+    }
+  }
+
+  return savedChannels
 }
 
 const replaceSepaAccounts = async (associationId, accounts = []) => {
@@ -322,13 +372,18 @@ app.post('/api/contacts', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'No data provided' })
   }
 
+  const { communicationChannels } = data
   const newData = {
-    id: generateId(),
-    ...data
+    // Client-supplied ids are preserved (used by the vendor migration from lw002)
+    id: data.id || generateId(),
+    ...pickFields(data, contactFields)
   }
 
   const result = await database.insert('contacts', newData)
-  res.status(201).json(result)
+  const savedChannels = Array.isArray(communicationChannels)
+    ? await replaceContactChannels(result.id, communicationChannels)
+    : []
+  res.status(201).json({ ...result, communicationChannels: savedChannels })
 }))
 
 // PUT - Update contact
@@ -340,8 +395,16 @@ app.put('/api/contacts/:id', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'No data provided' })
   }
 
-  const result = await database.update('contacts', id, data)
-  res.json(result)
+  const { communicationChannels } = data
+  const contactData = pickFields(data, contactFields)
+  const result = Object.keys(contactData).length > 0
+    ? await database.update('contacts', id, contactData)
+    : await database.getById('contacts', id)
+  const savedChannels = Array.isArray(communicationChannels)
+    ? await replaceContactChannels(id, communicationChannels)
+    : await database.getWhere('contact_communication', 'contact_id = ?', [id])
+
+  res.json({ ...result, id, communicationChannels: savedChannels })
 }))
 
 // DELETE - Delete contact
@@ -352,6 +415,12 @@ app.delete('/api/contacts/:id', asyncHandler(async (req, res) => {
 }))
 
 // ===== CONTACT COMMUNICATION ENDPOINTS =====
+
+// GET all communication channels of all contacts (bulk read for lw002)
+app.get('/api/contact_communication', asyncHandler(async (req, res) => {
+  const channels = await database.getAll('contact_communication')
+  res.json(channels)
+}))
 
 // GET all communication channels for a contact
 app.get('/api/contacts/:id/communication', asyncHandler(async (req, res) => {
@@ -398,6 +467,49 @@ app.delete('/api/communication/:id', asyncHandler(async (req, res) => {
   await database.delete('contact_communication', id)
   res.json({ success: true, id })
 }))
+
+// ===== CATEGORY FRAMEWORK ENDPOINTS =====
+// Generic CRUD for category_types, categories and categorization
+// (used by the lw001 frontend and read by lw002 for partner/retail planning)
+
+const categoryEntities = ['category_types', 'categories', 'categorization']
+
+for (const entity of categoryEntities) {
+  app.get(`/api/${entity}`, asyncHandler(async (req, res) => {
+    res.json(await database.getAll(entity))
+  }))
+
+  app.get(`/api/${entity}/:id`, asyncHandler(async (req, res) => {
+    const record = await database.getById(entity, req.params.id)
+    if (!record) {
+      return res.status(404).json({ error: 'Record not found' })
+    }
+    res.json(record)
+  }))
+
+  app.post(`/api/${entity}`, asyncHandler(async (req, res) => {
+    const data = req.body
+    if (!data) {
+      return res.status(400).json({ error: 'No data provided' })
+    }
+    const result = await database.insert(entity, { id: data.id || generateId(), ...data })
+    res.status(201).json(result)
+  }))
+
+  app.put(`/api/${entity}/:id`, asyncHandler(async (req, res) => {
+    const data = req.body
+    if (!data) {
+      return res.status(400).json({ error: 'No data provided' })
+    }
+    const result = await database.update(entity, req.params.id, data)
+    res.json(result)
+  }))
+
+  app.delete(`/api/${entity}/:id`, asyncHandler(async (req, res) => {
+    await database.delete(entity, req.params.id)
+    res.json({ success: true, id: req.params.id })
+  }))
+}
 
 // Error handler
 app.use((err, req, res, next) => {

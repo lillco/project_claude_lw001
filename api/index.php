@@ -510,6 +510,13 @@ try {
 
     // ===== CONTACT COMMUNICATION ENDPOINTS =====
 
+    // Route: GET /contact_communication - Bulk read of all channels (used by lw002)
+    if ($method === 'GET' && $path === 'contact_communication') {
+        $result = $db->getAll('contact_communication');
+        echo json_encode($result);
+        exit();
+    }
+
     // Route: GET /contacts/:id/communication - Get all communication channels for a contact
     if ($method === 'GET' && $segments[0] === 'contacts' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
         $contactId = $segments[1];

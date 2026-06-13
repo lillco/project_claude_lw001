@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Save, X } from 'lucide-react'
 import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
+import { contactsAPI } from '../../api/contacts'
 
 function ContactForm({ contact, contactType, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
   const [formData, setFormData] = useState({
@@ -38,8 +39,22 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
         alt_zip: contact.alt_zip || '',
         alt_city: contact.alt_city || ''
       })
-      // TODO: Load communication channels from API
+      // Load existing communication channels; saving replaces all channels,
+      // so an empty list here would silently delete them
+      let cancelled = false
       setCommunicationChannels([])
+      contactsAPI.getCommunication(contact.id)
+        .then(channels => {
+          if (cancelled || !Array.isArray(channels)) return
+          setCommunicationChannels(channels.map(ch => ({
+            ...ch,
+            is_primary: Boolean(ch.is_primary)
+          })))
+        })
+        .catch(err => {
+          console.error('Failed to load communication channels:', err)
+        })
+      return () => { cancelled = true }
     } else {
       setFormData(prev => ({ ...prev, contact_type: contactType }))
     }
@@ -104,6 +119,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
       case 'organ': return 'Organ'
       case 'member': return 'Mitglied'
       case 'retailer': return 'Einzelhändler'
+      case 'vendor': return 'Marktbeschicker'
       default: return 'Kontakt'
     }
   }

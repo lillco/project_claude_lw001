@@ -25,7 +25,7 @@ function App() {
   const [viewMode, setViewMode] = useState(false)
 
   const association = api.association
-  const contactTabs = ['organe', 'mitglieder', 'einzelhaendler']
+  const contactTabs = ['organe', 'mitglieder', 'einzelhaendler', 'marktbeschicker']
   const settingsTabs = ['category_types', 'categories', 'categorizations']
 
   const getCommunicationLabel = (type) => {
@@ -241,6 +241,7 @@ function App() {
       case 'organe': return 'organ'
       case 'mitglieder': return 'member'
       case 'einzelhaendler': return 'retailer'
+      case 'marktbeschicker': return 'vendor'
       default: return null
     }
   }
@@ -254,6 +255,7 @@ function App() {
       case 'organe':
       case 'mitglieder':
       case 'einzelhaendler':
+      case 'marktbeschicker':
         return api.contacts.find(item => item.id === editingId) || null
       case 'category_types':
         return api.categoryTypes.find(item => item.id === editingId) || null
@@ -280,6 +282,8 @@ function App() {
         return `${action}Mitglied`
       case 'einzelhaendler':
         return `${action}Einzelhändler`
+      case 'marktbeschicker':
+        return `${action}Marktbeschicker`
       case 'category_types':
         return `${action}Kategorietyp`
       case 'categories':
@@ -306,6 +310,7 @@ function App() {
       case 'organe':
       case 'mitglieder':
       case 'einzelhaendler':
+      case 'marktbeschicker':
         return (
           <ContactForm
             contact={item}
@@ -345,6 +350,7 @@ function App() {
             categorizations={api.categorizations}
             categories={api.categories}
             association={association}
+            contacts={api.contacts}
             onSave={handleSave}
             onCancel={handleCancel}
             viewMode={viewMode}
@@ -562,12 +568,24 @@ function App() {
             showSearch={!editingId}
           />
         )
+      case 'marktbeschicker':
+        return (
+          <ContactsTable
+            contacts={api.contacts}
+            contactType="vendor"
+            onEdit={handleEdit}
+            onDelete={(id) => api.deleteContact(id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
       case 'categorizations':
         return (
           <CategorizationsTable
             categorizations={api.categorizations}
             categories={api.categories}
             association={association}
+            contacts={api.contacts}
             onEdit={handleEdit}
             onDelete={(id) => handleDelete('categorization', id)}
             onRowClick={handleRowClick}
@@ -628,6 +646,7 @@ function App() {
               {activeTab === 'organe' && 'Organe'}
               {activeTab === 'mitglieder' && 'Mitglieder'}
               {activeTab === 'einzelhaendler' && 'Einzelhändler'}
+              {activeTab === 'marktbeschicker' && 'Marktbeschicker'}
               {activeTab === 'category_types' && 'Kategorietypen'}
               {activeTab === 'categories' && 'Kategorien'}
               {activeTab === 'categorizations' && 'Kategorisierung'}
