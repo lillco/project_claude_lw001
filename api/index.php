@@ -610,6 +610,25 @@ try {
                     echo json_encode(['error' => 'No data provided']);
                     exit();
                 }
+                // categorization is a pure join table: re-linking the same
+                // (entityType, entityId, categoryId) must be idempotent, not a 500
+                if ($entity === 'categorization') {
+                    $conn = $db->getConnection();
+                    $check = $conn->prepare(
+                        "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
+                    );
+                    $check->execute([
+                        $input['entityType'] ?? '',
+                        $input['entityId'] ?? '',
+                        $input['categoryId'] ?? ''
+                    ]);
+                    $existing = $check->fetch(PDO::FETCH_ASSOC);
+                    if ($existing) {
+                        http_response_code(200);
+                        echo json_encode($existing);
+                        exit();
+                    }
+                }
                 $result = $db->insert($entity, $input);
                 http_response_code(201);
                 echo json_encode($result);

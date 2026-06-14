@@ -492,6 +492,18 @@ for (const entity of categoryEntities) {
     if (!data) {
       return res.status(400).json({ error: 'No data provided' })
     }
+    // categorization is a pure join table: re-linking the same
+    // (entityType, entityId, categoryId) must be idempotent, not a 500
+    if (entity === 'categorization') {
+      const existing = await database.getWhere(
+        'categorization',
+        'entityType = ? AND entityId = ? AND categoryId = ?',
+        [data.entityType ?? '', data.entityId ?? '', data.categoryId ?? '']
+      )
+      if (existing && existing.length > 0) {
+        return res.status(200).json(existing[0])
+      }
+    }
     const result = await database.insert(entity, { id: data.id || generateId(), ...data })
     res.status(201).json(result)
   }))
