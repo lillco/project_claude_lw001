@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Save, X } from 'lucide-react'
 import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
 import { contactsAPI } from '../../api/contacts'
-import { CATEGORY_ID_ROLE, ROLE_CATEGORY_ID, applicableTo } from '../../utils/contactRoles'
+import { KONTAKTTYP_TYPE_ID, applicableTo } from '../../utils/contactCategories'
 
-function ContactForm({ contact, contactType, categoryTypes = [], contactCategorizations = [], categories, onSave, onCancel, viewMode, onChangeToEdit }) {
+function ContactForm({ contact, defaultCategoryId, categoryTypes = [], contactCategorizations = [], categories, onSave, onCancel, viewMode, onChangeToEdit }) {
   const [formData, setFormData] = useState({
-    contact_type: contactType,
     location_category_id: '',
     status: 'active',
     entry_date: '',
@@ -25,27 +24,30 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
   const [submitting, setSubmitting] = useState(false)
 
   // Kategorisierung (n:m): nur die für Kontakte anwendbaren Kategorietypen.
-  // "Kontakttyp" liefert die Rollen (Mitglied/Einzelhandel/Marktbeschicker/Organ).
+  // Der Typ "Kontakttyp" bestimmt die Reiter-Zugehörigkeit (Mitglied/
+  // Einzelhandel/Marktbeschicker/Organ).
   const contactCategoryTypes = (categoryTypes || []).filter(t => applicableTo(t.applicableEntities, 'contact'))
   const contactCategoryTypeIds = new Set(contactCategoryTypes.map(t => t.id))
   const manageableCategories = (categories || []).filter(c => contactCategoryTypeIds.has(c.typeId))
+  const kontakttypCategoryIds = new Set(
+    manageableCategories.filter(c => c.typeId === KONTAKTTYP_TYPE_ID).map(c => c.id)
+  )
 
   // vorbelegt aus den bestehenden Kontakt-Kategorisierungen; beim Anlegen mit
-  // der Rolle des aktiven Reiters
+  // der Kategorie des aktiven Reiters
   const initialSelectedIds = (contactCategorizations || []).map(c => c.categoryId)
   const selectedKey = initialSelectedIds.slice().sort().join(',')
-  const defaultRoleId = contactType ? ROLE_CATEGORY_ID[contactType] : null
   const [selectedCategoryIds, setSelectedCategoryIds] = useState(
-    initialSelectedIds.length ? initialSelectedIds : (defaultRoleId ? [defaultRoleId] : [])
+    initialSelectedIds.length ? initialSelectedIds : (defaultCategoryId ? [defaultCategoryId] : [])
   )
 
   useEffect(() => {
     const base = initialSelectedIds.length
       ? initialSelectedIds
-      : (defaultRoleId ? [defaultRoleId] : [])
+      : (defaultCategoryId ? [defaultCategoryId] : [])
     setSelectedCategoryIds(base)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contact?.id, selectedKey, contactType])
+  }, [contact?.id, selectedKey, defaultCategoryId])
 
   const toggleCategory = (categoryId) => {
     setSelectedCategoryIds(prev =>
@@ -56,7 +58,6 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
   useEffect(() => {
     if (contact) {
       setFormData({
-        contact_type: contact.contact_type || contactType,
         location_category_id: contact.location_category_id || '',
         status: contact.status || 'active',
         entry_date: contact.entry_date || '',
@@ -86,10 +87,8 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
           console.error('Failed to load communication channels:', err)
         })
       return () => { cancelled = true }
-    } else {
-      setFormData(prev => ({ ...prev, contact_type: contactType }))
     }
-  }, [contact, contactType])
+  }, [contact])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -135,22 +134,17 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (submitting) return
-    // Mindestens eine Rolle (Kontakttyp-Kategorie), sonst taucht der Kontakt
-    // in keinem Reiter auf
-    const selectedRoleKeys = selectedCategoryIds.map(id => CATEGORY_ID_ROLE[id]).filter(Boolean)
-    if (selectedRoleKeys.length === 0) {
-      alert('Bitte mindestens eine Rolle (Kontakttyp) auswählen.')
+    // Mindestens eine "Kontakttyp"-Kategorie, sonst taucht der Kontakt in
+    // keinem Reiter auf
+    const hasKontakttyp = selectedCategoryIds.some(id => kontakttypCategoryIds.has(id))
+    if (!hasKontakttyp) {
+      alert('Bitte mindestens eine Kontakttyp-Kategorie auswählen (z. B. Mitglied, Einzelhandel, Marktbeschicker, Organ).')
       return
     }
-    // Primärrolle als Kompatibilitäts-Schatten in contact_type (für lw002,
-    // bis der Markt auf Rollen umgestellt ist): bevorzugt die Rolle des aktiven
-    // Reiters, sonst die erste gewählte Rolle
-    const primaryRole = selectedRoleKeys.includes(contactType) ? contactType : selectedRoleKeys[0]
     setSubmitting(true)
     try {
       await onSave({
         ...formData,
-        contact_type: primaryRole,
         categoryIds: selectedCategoryIds,
         communicationChannels
       })
@@ -160,19 +154,9 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
   }
 
   // Filter location categories
-  const locationCategories = categories.filter(cat => 
+  const locationCategories = categories.filter(cat =>
     cat.typeName === 'Lage' || cat.typeId?.includes('lage')
   )
-
-  const getContactTypeLabel = () => {
-    switch (contactType) {
-      case 'organ': return 'Organ'
-      case 'member': return 'Mitglied'
-      case 'retailer': return 'Einzelhändler'
-      case 'vendor': return 'Marktbeschicker'
-      default: return 'Kontakt'
-    }
-  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

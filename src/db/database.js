@@ -136,7 +136,7 @@ class DatabaseLayer {
       contacts: `
         CREATE TABLE IF NOT EXISTS contacts (
           id VARCHAR(50) PRIMARY KEY,
-          contact_type VARCHAR(50) NOT NULL,
+          contact_type VARCHAR(50),
           location_category_id VARCHAR(50),
           status VARCHAR(50) NOT NULL,
           entry_date DATE,

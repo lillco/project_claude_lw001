@@ -401,7 +401,7 @@ try {
         unset($input['communicationChannels']);
 
         // Only allow known contact columns
-        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+        $allowedFields = ['location_category_id', 'status', 'entry_date',
                           'company_name', 'salutation', 'contact_person', 'street', 'zip', 
                           'city', 'alt_street', 'alt_zip', 'alt_city'];
         $input = array_intersect_key($input, array_flip($allowedFields));
@@ -458,7 +458,7 @@ try {
         unset($input['communicationChannels']);
 
         // Only allow known contact columns
-        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+        $allowedFields = ['location_category_id', 'status', 'entry_date',
                           'company_name', 'salutation', 'contact_person', 'street', 'zip', 
                           'city', 'alt_street', 'alt_zip', 'alt_city'];
         $input = array_intersect_key($input, array_flip($allowedFields));

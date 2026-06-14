@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react'
 import { Edit, Trash2, Search } from 'lucide-react'
-import { contactHasRole } from '../../utils/contactRoles'
+import { contactHasCategory } from '../../utils/contactCategories'
 
-function ContactsTable({ contacts, contactType, roleMap = new Map(), onEdit, onDelete, onRowClick, showSearch = true }) {
+function ContactsTable({ contacts, categoryId, categoryMap = new Map(), onEdit, onDelete, onRowClick, showSearch = true }) {
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Filter contacts by role (n:m via categorization, falls back to contact_type
-  // for not-yet-migrated contacts) and search term
+  // Filter contacts by their categorization (entityType 'contact') under the
+  // tab's "Kontakttyp" category, plus search term
   const filteredContacts = useMemo(() => {
     return contacts
-      .filter(contact => contactHasRole(roleMap, contact, contactType))
+      .filter(contact => contactHasCategory(categoryMap, contact.id, categoryId))
       .filter(contact => {
         if (!searchTerm) return true
         const search = searchTerm.toLowerCase()
@@ -20,7 +20,7 @@ function ContactsTable({ contacts, contactType, roleMap = new Map(), onEdit, onD
           contact.status?.toLowerCase().includes(search)
         )
       })
-  }, [contacts, contactType, roleMap, searchTerm])
+  }, [contacts, categoryId, categoryMap, searchTerm])
 
   const getStatusBadge = (status) => {
     const statusColors = {

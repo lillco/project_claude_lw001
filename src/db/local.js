@@ -57,7 +57,6 @@ const communicationFields = [
 ]
 
 const contactFields = [
-  'contact_type',
   'location_category_id',
   'status',
   'entry_date',

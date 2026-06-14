@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Save, X, Edit } from 'lucide-react'
 
-const CONTACT_TYPE_LABELS = {
-  organ: 'Organ',
-  member: 'Mitglied',
-  retailer: 'Einzelhändler',
-  vendor: 'Marktbeschicker'
-}
-
 function CategorizationForm({
   categorization,
   categorizations,
@@ -150,7 +143,7 @@ function CategorizationForm({
                 <option value="">Kontakt auswählen...</option>
                 {contacts.map(contact => (
                   <option key={contact.id} value={contact.id}>
-                    {contact.company_name} ({CONTACT_TYPE_LABELS[contact.contact_type] || contact.contact_type})
+                    {contact.company_name}{contact.city ? ` · ${contact.city}` : ''}
                   </option>
                 ))}
               </select>
@@ -158,10 +151,9 @@ function CategorizationForm({
           </div>
         </div>
 
-        {!isAssociation && selectedContact && (
+        {!isAssociation && selectedContact && selectedContact.city && (
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            {CONTACT_TYPE_LABELS[selectedContact.contact_type] || selectedContact.contact_type}
-            {selectedContact.city ? ` · ${selectedContact.city}` : ''}
+            {selectedContact.city}
           </p>
         )}
 
