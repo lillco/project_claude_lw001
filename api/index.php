@@ -616,30 +616,38 @@ try {
                 // common case, then catch the unique-key race atomically.
                 if ($entity === 'categorization') {
                     $conn = $db->getConnection();
-                    $findExisting = function () use ($conn, $input) {
+                    $entityType = $input['entityType'] ?? '';
+                    $entityId = $input['entityId'] ?? '';
+                    $categoryId = $input['categoryId'] ?? '';
+                    // Match the actual unique constraint, which is on
+                    // (entityId, categoryId) — entityType is NOT part of it.
+                    $findExisting = function () use ($conn, $entityId, $categoryId) {
                         $check = $conn->prepare(
-                            "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
+                            "SELECT * FROM categorization WHERE entityId = ? AND categoryId = ? LIMIT 1"
                         );
-                        $check->execute([
-                            $input['entityType'] ?? '',
-                            $input['entityId'] ?? '',
-                            $input['categoryId'] ?? ''
-                        ]);
+                        $check->execute([$entityId, $categoryId]);
                         return $check->fetch(PDO::FETCH_ASSOC);
+                    };
+                    $returnExisting = function ($row) use ($conn, $entityType) {
+                        // Heal a mismatched entityType so role filters stay correct
+                        if ($entityType !== '' && ($row['entityType'] ?? '') !== $entityType) {
+                            $upd = $conn->prepare("UPDATE categorization SET entityType = ? WHERE id = ?");
+                            $upd->execute([$entityType, $row['id']]);
+                            $row['entityType'] = $entityType;
+                        }
+                        http_response_code(200);
+                        echo json_encode($row);
+                        exit();
                     };
                     $existing = $findExisting();
                     if ($existing) {
-                        http_response_code(200);
-                        echo json_encode($existing);
-                        exit();
+                        $returnExisting($existing);
                     }
                     try {
                         $result = $db->insert($entity, $input);
                     } catch (PDOException $e) {
                         if ($e->getCode() === '23000' && ($existing = $findExisting())) {
-                            http_response_code(200);
-                            echo json_encode($existing);
-                            exit();
+                            $returnExisting($existing);
                         }
                         throw $e;
                     }

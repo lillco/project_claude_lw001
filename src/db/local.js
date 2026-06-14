@@ -496,14 +496,24 @@ for (const entity of categoryEntities) {
     // (entityType, entityId, categoryId) must be idempotent, not a 500 —
     // even under concurrent double-submits.
     if (entity === 'categorization') {
+      const entityType = data.entityType ?? ''
+      // Match the actual unique constraint, which is on (entityId, categoryId)
       const findExisting = () => database.getWhere(
         'categorization',
-        'entityType = ? AND entityId = ? AND categoryId = ?',
-        [data.entityType ?? '', data.entityId ?? '', data.categoryId ?? '']
+        'entityId = ? AND categoryId = ?',
+        [data.entityId ?? '', data.categoryId ?? '']
       )
+      const returnExisting = async (row) => {
+        // Heal a mismatched entityType so role filters stay correct
+        if (entityType !== '' && row.entityType !== entityType) {
+          await database.update('categorization', row.id, { entityType })
+          row.entityType = entityType
+        }
+        return res.status(200).json(row)
+      }
       const existing = await findExisting()
       if (existing && existing.length > 0) {
-        return res.status(200).json(existing[0])
+        return await returnExisting(existing[0])
       }
       try {
         const result = await database.insert(entity, { id: data.id || generateId(), ...data })
@@ -512,7 +522,7 @@ for (const entity of categoryEntities) {
         if (String(err.code || '').includes('CONSTRAINT')) {
           const again = await findExisting()
           if (again && again.length > 0) {
-            return res.status(200).json(again[0])
+            return await returnExisting(again[0])
           }
         }
         throw err
