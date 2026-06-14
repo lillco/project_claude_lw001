@@ -447,6 +447,7 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
         {viewMode ? (
           <>
             <button
+              key="view-close"
               type="button"
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -454,6 +455,7 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
               Schließen
             </button>
             <button
+              key="view-edit"
               type="button"
               onClick={onChangeToEdit}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -464,6 +466,7 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
         ) : (
           <>
             <button
+              key="edit-cancel"
               type="button"
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
@@ -472,6 +475,7 @@ function ContactForm({ contact, contactType, categoryTypes = [], contactCategori
               Abbrechen
             </button>
             <button
+              key="edit-submit"
               type="submit"
               disabled={submitting}
               className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
