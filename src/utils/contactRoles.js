@@ -59,3 +59,14 @@ export function getEffectiveRoles(roleMap, contact) {
 export function contactHasRole(roleMap, contact, roleKey) {
   return getEffectiveRoles(roleMap, contact).has(roleKey)
 }
+
+/**
+ * Prüft, ob eine (komma-separierte) applicableEntities-Angabe eine Entität enthält.
+ */
+export function applicableTo(entitiesStr, entity) {
+  return String(entitiesStr || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+    .includes(entity)
+}

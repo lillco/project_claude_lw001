@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Save, X } from 'lucide-react'
 import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
 import { contactsAPI } from '../../api/contacts'
-import { ROLE_KEYS, ROLE_LABELS } from '../../utils/contactRoles'
+import { CATEGORY_ID_ROLE, ROLE_CATEGORY_ID, applicableTo } from '../../utils/contactRoles'
 
-function ContactForm({ contact, contactType, initialRoles, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
+function ContactForm({ contact, contactType, categoryTypes = [], contactCategorizations = [], categories, onSave, onCancel, viewMode, onChangeToEdit }) {
   const [formData, setFormData] = useState({
     contact_type: contactType,
     location_category_id: '',
@@ -24,24 +24,32 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
   const [communicationChannels, setCommunicationChannels] = useState([])
   const [submitting, setSubmitting] = useState(false)
 
-  // Rollen (n:m): vorbelegt aus den bestehenden Rollen des Kontakts, beim
-  // Anlegen mit der Rolle des aktiven Reiters
-  const rolesKey = (initialRoles || []).join(',')
-  const [selectedRoles, setSelectedRoles] = useState(
-    initialRoles && initialRoles.length ? initialRoles : (contactType ? [contactType] : [])
+  // Kategorisierung (n:m): nur die für Kontakte anwendbaren Kategorietypen.
+  // "Kontakttyp" liefert die Rollen (Mitglied/Einzelhandel/Marktbeschicker/Organ).
+  const contactCategoryTypes = (categoryTypes || []).filter(t => applicableTo(t.applicableEntities, 'contact'))
+  const contactCategoryTypeIds = new Set(contactCategoryTypes.map(t => t.id))
+  const manageableCategories = (categories || []).filter(c => contactCategoryTypeIds.has(c.typeId))
+
+  // vorbelegt aus den bestehenden Kontakt-Kategorisierungen; beim Anlegen mit
+  // der Rolle des aktiven Reiters
+  const initialSelectedIds = (contactCategorizations || []).map(c => c.categoryId)
+  const selectedKey = initialSelectedIds.slice().sort().join(',')
+  const defaultRoleId = contactType ? ROLE_CATEGORY_ID[contactType] : null
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState(
+    initialSelectedIds.length ? initialSelectedIds : (defaultRoleId ? [defaultRoleId] : [])
   )
 
   useEffect(() => {
-    const base = initialRoles && initialRoles.length
-      ? initialRoles
-      : (contactType ? [contactType] : [])
-    setSelectedRoles(base)
+    const base = initialSelectedIds.length
+      ? initialSelectedIds
+      : (defaultRoleId ? [defaultRoleId] : [])
+    setSelectedCategoryIds(base)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contact?.id, rolesKey, contactType])
+  }, [contact?.id, selectedKey, contactType])
 
-  const toggleRole = (roleKey) => {
-    setSelectedRoles(prev =>
-      prev.includes(roleKey) ? prev.filter(r => r !== roleKey) : [...prev, roleKey]
+  const toggleCategory = (categoryId) => {
+    setSelectedCategoryIds(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     )
   }
 
@@ -127,19 +135,23 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (submitting) return
-    if (selectedRoles.length === 0) {
-      alert('Bitte mindestens eine Rolle auswählen.')
+    // Mindestens eine Rolle (Kontakttyp-Kategorie), sonst taucht der Kontakt
+    // in keinem Reiter auf
+    const selectedRoleKeys = selectedCategoryIds.map(id => CATEGORY_ID_ROLE[id]).filter(Boolean)
+    if (selectedRoleKeys.length === 0) {
+      alert('Bitte mindestens eine Rolle (Kontakttyp) auswählen.')
       return
     }
-    // Primärrolle (denormalisiert in contact_type): bevorzugt die Rolle des
-    // aktiven Reiters, sonst die erste gewählte Rolle
-    const primaryRole = selectedRoles.includes(contactType) ? contactType : selectedRoles[0]
+    // Primärrolle als Kompatibilitäts-Schatten in contact_type (für lw002,
+    // bis der Markt auf Rollen umgestellt ist): bevorzugt die Rolle des aktiven
+    // Reiters, sonst die erste gewählte Rolle
+    const primaryRole = selectedRoleKeys.includes(contactType) ? contactType : selectedRoleKeys[0]
     setSubmitting(true)
     try {
       await onSave({
         ...formData,
         contact_type: primaryRole,
-        roles: selectedRoles,
+        categoryIds: selectedCategoryIds,
         communicationChannels
       })
     } finally {
@@ -164,35 +176,55 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Rollen (Mehrfachauswahl) */}
+      {/* Kategorisierung (inkl. Rollen über den Typ "Kontakttyp") */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
         <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">
-          Rollen *
+          Kategorisierung *
         </h4>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-          Ein Partner kann mehrere Rollen tragen (z.&nbsp;B. Mitglied und Marktbeschicker).
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Mehrfachauswahl. Der Typ „Kontakttyp" bestimmt die Rolle(n) — ein Partner
+          kann z.&nbsp;B. zugleich Mitglied und Marktbeschicker sein.
         </p>
-        <div className="flex flex-wrap gap-3">
-          {ROLE_KEYS.map(roleKey => (
-            <label
-              key={roleKey}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer select-none ${
-                selectedRoles.includes(roleKey)
-                  ? 'bg-[#BAF0DB] border-black/20 text-black'
-                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-              } ${viewMode ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedRoles.includes(roleKey)}
-                onChange={() => toggleRole(roleKey)}
-                disabled={viewMode}
-                className="accent-green-600"
-              />
-              {ROLE_LABELS[roleKey]}
-            </label>
-          ))}
-        </div>
+        {contactCategoryTypes.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Keine für Kontakte anwendbaren Kategorietypen vorhanden.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {contactCategoryTypes.map(type => {
+              const cats = manageableCategories.filter(c => c.typeId === type.id)
+              if (cats.length === 0) return null
+              return (
+                <div key={type.id}>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {type.name}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {cats.map(cat => (
+                      <label
+                        key={cat.id}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-pointer select-none text-sm ${
+                          selectedCategoryIds.includes(cat.id)
+                            ? 'bg-[#BAF0DB] border-black/20 text-black'
+                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                        } ${viewMode ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCategoryIds.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                          disabled={viewMode}
+                          className="accent-green-600"
+                        />
+                        {cat.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Stammdaten */}

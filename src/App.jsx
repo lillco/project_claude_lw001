@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { generateId } from './utils/dataHelpers'
 import { useApi } from './hooks/useApi'
-import { buildRoleMap, getEffectiveRoles, ROLE_CATEGORY_ID, ROLE_CATEGORY_IDS } from './utils/contactRoles'
+import { buildRoleMap, applicableTo } from './utils/contactRoles'
 import TestBanner from './components/TestBanner'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
@@ -32,15 +32,26 @@ function App() {
   // Rollen-Map: contactId → Set<roleKey>, abgeleitet aus den Kategorisierungen
   const roleMap = useMemo(() => buildRoleMap(api.categorizations), [api.categorizations])
 
-  // Rollen-Kategorisierungen eines Kontakts an die ausgewählten Rollen angleichen
-  const syncContactRoles = async (contactId, roles) => {
-    const desired = new Set((roles || []).map(r => ROLE_CATEGORY_ID[r]).filter(Boolean))
+  // IDs aller für Kontakte anwendbaren Kategorien. Nur diese verwaltet die
+  // GP-Pflege — Markt-Kategorisierungen (entityType 'vendor'/'booth') bleiben
+  // unberührt.
+  const contactCategoryIds = useMemo(() => {
+    const set = new Set()
+    for (const c of api.categories) {
+      if (applicableTo(c.applicableEntities, 'contact')) set.add(c.id)
+    }
+    return set
+  }, [api.categories])
+
+  // Kontakt-Kategorisierungen an die ausgewählten Kategorien angleichen
+  const syncContactCategorizations = async (contactId, categoryIds) => {
+    const desired = new Set((categoryIds || []).filter(id => contactCategoryIds.has(id)))
     const existing = api.categorizations.filter(
-      c => c.entityType === 'contact' && c.entityId === contactId && ROLE_CATEGORY_IDS.includes(c.categoryId)
+      c => c.entityType === 'contact' && c.entityId === contactId && contactCategoryIds.has(c.categoryId)
     )
     const existingCatIds = new Set(existing.map(c => c.categoryId))
 
-    // fehlende Rollen anlegen
+    // fehlende Kategorien anlegen
     for (const categoryId of desired) {
       if (!existingCatIds.has(categoryId)) {
         await api.addCategorization({
@@ -51,7 +62,7 @@ function App() {
         })
       }
     }
-    // abgewählte Rollen entfernen
+    // abgewählte Kategorien entfernen
     for (const c of existing) {
       if (!desired.has(c.categoryId)) {
         await api.deleteCategorization(c.id)
@@ -241,7 +252,7 @@ function App() {
 
       // Handle contacts
       if (contactTabs.includes(activeTab)) {
-        const { roles, ...contactData } = data
+        const { categoryIds, ...contactData } = data
         let savedId = editingId
         if (editingId === 'new') {
           const created = await api.addContact(contactData)
@@ -250,7 +261,7 @@ function App() {
           await api.updateContact(editingId, contactData)
         }
         if (savedId) {
-          await syncContactRoles(savedId, roles)
+          await syncContactCategorizations(savedId, categoryIds)
         }
         setEditingId(null)
         setViewMode(false)
@@ -352,7 +363,8 @@ function App() {
           <ContactForm
             contact={item}
             contactType={getContactType()}
-            initialRoles={item ? Array.from(getEffectiveRoles(roleMap, item)) : [getContactType()]}
+            categoryTypes={api.categoryTypes}
+            contactCategorizations={item ? api.categorizations.filter(c => c.entityType === 'contact' && c.entityId === item.id) : []}
             categories={api.categories}
             onSave={handleSave}
             onCancel={handleCancel}
