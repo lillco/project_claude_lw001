@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Save, X } from 'lucide-react'
 import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
 import { contactsAPI } from '../../api/contacts'
+import { ROLE_KEYS, ROLE_LABELS } from '../../utils/contactRoles'
 
-function ContactForm({ contact, contactType, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
+function ContactForm({ contact, contactType, initialRoles, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
   const [formData, setFormData] = useState({
     contact_type: contactType,
     location_category_id: '',
@@ -21,6 +22,27 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
   })
 
   const [communicationChannels, setCommunicationChannels] = useState([])
+
+  // Rollen (n:m): vorbelegt aus den bestehenden Rollen des Kontakts, beim
+  // Anlegen mit der Rolle des aktiven Reiters
+  const rolesKey = (initialRoles || []).join(',')
+  const [selectedRoles, setSelectedRoles] = useState(
+    initialRoles && initialRoles.length ? initialRoles : (contactType ? [contactType] : [])
+  )
+
+  useEffect(() => {
+    const base = initialRoles && initialRoles.length
+      ? initialRoles
+      : (contactType ? [contactType] : [])
+    setSelectedRoles(base)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact?.id, rolesKey, contactType])
+
+  const toggleRole = (roleKey) => {
+    setSelectedRoles(prev =>
+      prev.includes(roleKey) ? prev.filter(r => r !== roleKey) : [...prev, roleKey]
+    )
+  }
 
   useEffect(() => {
     if (contact) {
@@ -103,8 +125,17 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (selectedRoles.length === 0) {
+      alert('Bitte mindestens eine Rolle auswählen.')
+      return
+    }
+    // Primärrolle (denormalisiert in contact_type): bevorzugt die Rolle des
+    // aktiven Reiters, sonst die erste gewählte Rolle
+    const primaryRole = selectedRoles.includes(contactType) ? contactType : selectedRoles[0]
     onSave({
       ...formData,
+      contact_type: primaryRole,
+      roles: selectedRoles,
       communicationChannels
     })
   }
@@ -126,6 +157,37 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Rollen (Mehrfachauswahl) */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">
+          Rollen *
+        </h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+          Ein Partner kann mehrere Rollen tragen (z.&nbsp;B. Mitglied und Marktbeschicker).
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {ROLE_KEYS.map(roleKey => (
+            <label
+              key={roleKey}
+              className={`flex items-center gap-2 px-3 py-2 rounded-md border cursor-pointer select-none ${
+                selectedRoles.includes(roleKey)
+                  ? 'bg-[#BAF0DB] border-black/20 text-black'
+                  : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+              } ${viewMode ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              <input
+                type="checkbox"
+                checked={selectedRoles.includes(roleKey)}
+                onChange={() => toggleRole(roleKey)}
+                disabled={viewMode}
+                className="accent-green-600"
+              />
+              {ROLE_LABELS[roleKey]}
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Stammdaten */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Stammdaten</h4>

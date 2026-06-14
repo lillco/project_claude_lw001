@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { generateId } from './utils/dataHelpers'
 import { useApi } from './hooks/useApi'
+import { buildRoleMap, getEffectiveRoles, ROLE_CATEGORY_ID, ROLE_CATEGORY_IDS } from './utils/contactRoles'
 import TestBanner from './components/TestBanner'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
@@ -27,6 +28,36 @@ function App() {
   const association = api.association
   const contactTabs = ['organe', 'mitglieder', 'einzelhaendler', 'marktbeschicker']
   const settingsTabs = ['category_types', 'categories', 'categorizations']
+
+  // Rollen-Map: contactId → Set<roleKey>, abgeleitet aus den Kategorisierungen
+  const roleMap = useMemo(() => buildRoleMap(api.categorizations), [api.categorizations])
+
+  // Rollen-Kategorisierungen eines Kontakts an die ausgewählten Rollen angleichen
+  const syncContactRoles = async (contactId, roles) => {
+    const desired = new Set((roles || []).map(r => ROLE_CATEGORY_ID[r]).filter(Boolean))
+    const existing = api.categorizations.filter(
+      c => c.entityType === 'contact' && c.entityId === contactId && ROLE_CATEGORY_IDS.includes(c.categoryId)
+    )
+    const existingCatIds = new Set(existing.map(c => c.categoryId))
+
+    // fehlende Rollen anlegen
+    for (const categoryId of desired) {
+      if (!existingCatIds.has(categoryId)) {
+        await api.addCategorization({
+          id: `link_${generateId()}_${Math.random().toString(36).slice(2, 7)}`,
+          entityType: 'contact',
+          entityId: contactId,
+          categoryId
+        })
+      }
+    }
+    // abgewählte Rollen entfernen
+    for (const c of existing) {
+      if (!desired.has(c.categoryId)) {
+        await api.deleteCategorization(c.id)
+      }
+    }
+  }
 
   const getCommunicationLabel = (type) => {
     const labels = {
@@ -210,10 +241,16 @@ function App() {
 
       // Handle contacts
       if (contactTabs.includes(activeTab)) {
+        const { roles, ...contactData } = data
+        let savedId = editingId
         if (editingId === 'new') {
-          await api.addContact(data)
+          const created = await api.addContact(contactData)
+          savedId = created?.id
         } else {
-          await api.updateContact(editingId, data)
+          await api.updateContact(editingId, contactData)
+        }
+        if (savedId) {
+          await syncContactRoles(savedId, roles)
         }
         setEditingId(null)
         setViewMode(false)
@@ -315,6 +352,7 @@ function App() {
           <ContactForm
             contact={item}
             contactType={getContactType()}
+            initialRoles={item ? Array.from(getEffectiveRoles(roleMap, item)) : [getContactType()]}
             categories={api.categories}
             onSave={handleSave}
             onCancel={handleCancel}
@@ -540,6 +578,7 @@ function App() {
           <ContactsTable
             contacts={api.contacts}
             contactType="organ"
+            roleMap={roleMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -551,6 +590,7 @@ function App() {
           <ContactsTable
             contacts={api.contacts}
             contactType="member"
+            roleMap={roleMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -562,6 +602,7 @@ function App() {
           <ContactsTable
             contacts={api.contacts}
             contactType="retailer"
+            roleMap={roleMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -573,6 +614,7 @@ function App() {
           <ContactsTable
             contacts={api.contacts}
             contactType="vendor"
+            roleMap={roleMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
