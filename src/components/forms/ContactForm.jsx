@@ -22,6 +22,7 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
   })
 
   const [communicationChannels, setCommunicationChannels] = useState([])
+  const [submitting, setSubmitting] = useState(false)
 
   // Rollen (n:m): vorbelegt aus den bestehenden Rollen des Kontakts, beim
   // Anlegen mit der Rolle des aktiven Reiters
@@ -123,8 +124,9 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
     setCommunicationChannels(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    if (submitting) return
     if (selectedRoles.length === 0) {
       alert('Bitte mindestens eine Rolle auswählen.')
       return
@@ -132,12 +134,17 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
     // Primärrolle (denormalisiert in contact_type): bevorzugt die Rolle des
     // aktiven Reiters, sonst die erste gewählte Rolle
     const primaryRole = selectedRoles.includes(contactType) ? contactType : selectedRoles[0]
-    onSave({
-      ...formData,
-      contact_type: primaryRole,
-      roles: selectedRoles,
-      communicationChannels
-    })
+    setSubmitting(true)
+    try {
+      await onSave({
+        ...formData,
+        contact_type: primaryRole,
+        roles: selectedRoles,
+        communicationChannels
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   // Filter location categories
@@ -434,10 +441,11 @@ function ContactForm({ contact, contactType, initialRoles, categories, onSave, o
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2"
+              disabled={submitting}
+              className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              {contact ? 'Aktualisieren' : 'Erstellen'}
+              {submitting ? 'Speichert…' : (contact ? 'Aktualisieren' : 'Erstellen')}
             </button>
           </>
         )}

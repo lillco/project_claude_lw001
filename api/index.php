@@ -611,23 +611,41 @@ try {
                     exit();
                 }
                 // categorization is a pure join table: re-linking the same
-                // (entityType, entityId, categoryId) must be idempotent, not a 500
+                // (entityType, entityId, categoryId) must be idempotent, not a
+                // 500 — even under concurrent double-submits. Pre-check for the
+                // common case, then catch the unique-key race atomically.
                 if ($entity === 'categorization') {
                     $conn = $db->getConnection();
-                    $check = $conn->prepare(
-                        "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
-                    );
-                    $check->execute([
-                        $input['entityType'] ?? '',
-                        $input['entityId'] ?? '',
-                        $input['categoryId'] ?? ''
-                    ]);
-                    $existing = $check->fetch(PDO::FETCH_ASSOC);
+                    $findExisting = function () use ($conn, $input) {
+                        $check = $conn->prepare(
+                            "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
+                        );
+                        $check->execute([
+                            $input['entityType'] ?? '',
+                            $input['entityId'] ?? '',
+                            $input['categoryId'] ?? ''
+                        ]);
+                        return $check->fetch(PDO::FETCH_ASSOC);
+                    };
+                    $existing = $findExisting();
                     if ($existing) {
                         http_response_code(200);
                         echo json_encode($existing);
                         exit();
                     }
+                    try {
+                        $result = $db->insert($entity, $input);
+                    } catch (PDOException $e) {
+                        if ($e->getCode() === '23000' && ($existing = $findExisting())) {
+                            http_response_code(200);
+                            echo json_encode($existing);
+                            exit();
+                        }
+                        throw $e;
+                    }
+                    http_response_code(201);
+                    echo json_encode($result);
+                    exit();
                 }
                 $result = $db->insert($entity, $input);
                 http_response_code(201);
