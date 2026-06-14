@@ -476,6 +476,9 @@ const categoryEntities = ['category_types', 'categories', 'categorization']
 
 for (const entity of categoryEntities) {
   app.get(`/api/${entity}`, asyncHandler(async (req, res) => {
+    if (entity === 'categories') {
+      return res.json(await database.getAllCategoriesWithType())
+    }
     res.json(await database.getAll(entity))
   }))
 
@@ -497,18 +500,13 @@ for (const entity of categoryEntities) {
     // even under concurrent double-submits.
     if (entity === 'categorization') {
       const entityType = data.entityType ?? ''
-      // Match the actual unique constraint, which is on (entityId, categoryId)
+      // Match the actual unique constraint: entity type + entity + category.
       const findExisting = () => database.getWhere(
         'categorization',
-        'entityId = ? AND categoryId = ?',
-        [data.entityId ?? '', data.categoryId ?? '']
+        'entityType = ? AND entityId = ? AND categoryId = ?',
+        [entityType, data.entityId ?? '', data.categoryId ?? '']
       )
       const returnExisting = async (row) => {
-        // Heal a mismatched entityType so role filters stay correct
-        if (entityType !== '' && row.entityType !== entityType) {
-          await database.update('categorization', row.id, { entityType })
-          row.entityType = entityType
-        }
         return res.status(200).json(row)
       }
       const existing = await findExisting()

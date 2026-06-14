@@ -619,22 +619,15 @@ try {
                     $entityType = $input['entityType'] ?? '';
                     $entityId = $input['entityId'] ?? '';
                     $categoryId = $input['categoryId'] ?? '';
-                    // Match the actual unique constraint, which is on
-                    // (entityId, categoryId) — entityType is NOT part of it.
-                    $findExisting = function () use ($conn, $entityId, $categoryId) {
+                    // Match the actual unique constraint: entity type + entity + category.
+                    $findExisting = function () use ($conn, $entityType, $entityId, $categoryId) {
                         $check = $conn->prepare(
-                            "SELECT * FROM categorization WHERE entityId = ? AND categoryId = ? LIMIT 1"
+                            "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
                         );
-                        $check->execute([$entityId, $categoryId]);
+                        $check->execute([$entityType, $entityId, $categoryId]);
                         return $check->fetch(PDO::FETCH_ASSOC);
                     };
-                    $returnExisting = function ($row) use ($conn, $entityType) {
-                        // Heal a mismatched entityType so role filters stay correct
-                        if ($entityType !== '' && ($row['entityType'] ?? '') !== $entityType) {
-                            $upd = $conn->prepare("UPDATE categorization SET entityType = ? WHERE id = ?");
-                            $upd->execute([$entityType, $row['id']]);
-                            $row['entityType'] = $entityType;
-                        }
+                    $returnExisting = function ($row) {
                         http_response_code(200);
                         echo json_encode($row);
                         exit();
