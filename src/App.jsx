@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { generateId } from './utils/dataHelpers'
 import { useApi } from './hooks/useApi'
+import { buildContactCategoryMap, applicableTo, TAB_CATEGORY_ID } from './utils/contactCategories'
 import TestBanner from './components/TestBanner'
 import Header from './components/layout/Header'
 import Navigation from './components/layout/Navigation'
@@ -25,8 +26,49 @@ function App() {
   const [viewMode, setViewMode] = useState(false)
 
   const association = api.association
-  const contactTabs = ['organe', 'mitglieder', 'einzelhaendler']
+  const contactTabs = ['organe', 'mitglieder', 'einzelhaendler', 'marktbeschicker']
   const settingsTabs = ['category_types', 'categories', 'categorizations']
+
+  // Kontakt-Kategorie-Map: contactId → Set<categoryId> (entityType 'contact')
+  const categoryMap = useMemo(() => buildContactCategoryMap(api.categorizations), [api.categorizations])
+
+  // IDs aller für Kontakte anwendbaren Kategorien. Nur diese verwaltet die
+  // GP-Pflege — Markt-Kategorisierungen (entityType 'vendor'/'booth') bleiben
+  // unberührt.
+  const contactCategoryIds = useMemo(() => {
+    const set = new Set()
+    for (const c of api.categories) {
+      if (applicableTo(c.applicableEntities, 'contact')) set.add(c.id)
+    }
+    return set
+  }, [api.categories])
+
+  // Kontakt-Kategorisierungen an die ausgewählten Kategorien angleichen
+  const syncContactCategorizations = async (contactId, categoryIds) => {
+    const desired = new Set((categoryIds || []).filter(id => contactCategoryIds.has(id)))
+    const existing = api.categorizations.filter(
+      c => c.entityType === 'contact' && c.entityId === contactId && contactCategoryIds.has(c.categoryId)
+    )
+    const existingCatIds = new Set(existing.map(c => c.categoryId))
+
+    // fehlende Kategorien anlegen
+    for (const categoryId of desired) {
+      if (!existingCatIds.has(categoryId)) {
+        await api.addCategorization({
+          id: `link_${generateId()}_${Math.random().toString(36).slice(2, 7)}`,
+          entityType: 'contact',
+          entityId: contactId,
+          categoryId
+        })
+      }
+    }
+    // abgewählte Kategorien entfernen
+    for (const c of existing) {
+      if (!desired.has(c.categoryId)) {
+        await api.deleteCategorization(c.id)
+      }
+    }
+  }
 
   const getCommunicationLabel = (type) => {
     const labels = {
@@ -210,10 +252,16 @@ function App() {
 
       // Handle contacts
       if (contactTabs.includes(activeTab)) {
+        const { categoryIds, ...contactData } = data
+        let savedId = editingId
         if (editingId === 'new') {
-          await api.addContact(data)
+          const created = await api.addContact(contactData)
+          savedId = created?.id
         } else {
-          await api.updateContact(editingId, data)
+          await api.updateContact(editingId, contactData)
+        }
+        if (savedId) {
+          await syncContactCategorizations(savedId, categoryIds)
         }
         setEditingId(null)
         setViewMode(false)
@@ -236,14 +284,8 @@ function App() {
     }
   }
 
-  const getContactType = () => {
-    switch (activeTab) {
-      case 'organe': return 'organ'
-      case 'mitglieder': return 'member'
-      case 'einzelhaendler': return 'retailer'
-      default: return null
-    }
-  }
+  // Die "Kontakttyp"-Kategorie des aktiven Reiters (für Vorauswahl im Formular)
+  const getTabCategoryId = () => TAB_CATEGORY_ID[activeTab] || null
 
   const getEditingItem = () => {
     if (!editingId || editingId === 'new') return null
@@ -254,6 +296,7 @@ function App() {
       case 'organe':
       case 'mitglieder':
       case 'einzelhaendler':
+      case 'marktbeschicker':
         return api.contacts.find(item => item.id === editingId) || null
       case 'category_types':
         return api.categoryTypes.find(item => item.id === editingId) || null
@@ -280,6 +323,8 @@ function App() {
         return `${action}Mitglied`
       case 'einzelhaendler':
         return `${action}Einzelhändler`
+      case 'marktbeschicker':
+        return `${action}Marktbeschicker`
       case 'category_types':
         return `${action}Kategorietyp`
       case 'categories':
@@ -306,10 +351,13 @@ function App() {
       case 'organe':
       case 'mitglieder':
       case 'einzelhaendler':
+      case 'marktbeschicker':
         return (
           <ContactForm
             contact={item}
-            contactType={getContactType()}
+            defaultCategoryId={getTabCategoryId()}
+            categoryTypes={api.categoryTypes}
+            contactCategorizations={item ? api.categorizations.filter(c => c.entityType === 'contact' && c.entityId === item.id) : []}
             categories={api.categories}
             onSave={handleSave}
             onCancel={handleCancel}
@@ -345,6 +393,7 @@ function App() {
             categorizations={api.categorizations}
             categories={api.categories}
             association={association}
+            contacts={api.contacts}
             onSave={handleSave}
             onCancel={handleCancel}
             viewMode={viewMode}
@@ -533,7 +582,8 @@ function App() {
         return (
           <ContactsTable
             contacts={api.contacts}
-            contactType="organ"
+            categoryId="role_organ"
+            categoryMap={categoryMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -544,7 +594,8 @@ function App() {
         return (
           <ContactsTable
             contacts={api.contacts}
-            contactType="member"
+            categoryId="role_member"
+            categoryMap={categoryMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -555,7 +606,20 @@ function App() {
         return (
           <ContactsTable
             contacts={api.contacts}
-            contactType="retailer"
+            categoryId="role_retailer"
+            categoryMap={categoryMap}
+            onEdit={handleEdit}
+            onDelete={(id) => api.deleteContact(id)}
+            onRowClick={handleRowClick}
+            showSearch={!editingId}
+          />
+        )
+      case 'marktbeschicker':
+        return (
+          <ContactsTable
+            contacts={api.contacts}
+            categoryId="role_vendor"
+            categoryMap={categoryMap}
             onEdit={handleEdit}
             onDelete={(id) => api.deleteContact(id)}
             onRowClick={handleRowClick}
@@ -568,6 +632,7 @@ function App() {
             categorizations={api.categorizations}
             categories={api.categories}
             association={association}
+            contacts={api.contacts}
             onEdit={handleEdit}
             onDelete={(id) => handleDelete('categorization', id)}
             onRowClick={handleRowClick}
@@ -628,6 +693,7 @@ function App() {
               {activeTab === 'organe' && 'Organe'}
               {activeTab === 'mitglieder' && 'Mitglieder'}
               {activeTab === 'einzelhaendler' && 'Einzelhändler'}
+              {activeTab === 'marktbeschicker' && 'Marktbeschicker'}
               {activeTab === 'category_types' && 'Kategorietypen'}
               {activeTab === 'categories' && 'Kategorien'}
               {activeTab === 'categorizations' && 'Kategorisierung'}

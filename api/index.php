@@ -401,7 +401,7 @@ try {
         unset($input['communicationChannels']);
 
         // Only allow known contact columns
-        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+        $allowedFields = ['location_category_id', 'status', 'entry_date',
                           'company_name', 'salutation', 'contact_person', 'street', 'zip', 
                           'city', 'alt_street', 'alt_zip', 'alt_city'];
         $input = array_intersect_key($input, array_flip($allowedFields));
@@ -458,7 +458,7 @@ try {
         unset($input['communicationChannels']);
 
         // Only allow known contact columns
-        $allowedFields = ['contact_type', 'location_category_id', 'status', 'entry_date',
+        $allowedFields = ['location_category_id', 'status', 'entry_date',
                           'company_name', 'salutation', 'contact_person', 'street', 'zip', 
                           'city', 'alt_street', 'alt_zip', 'alt_city'];
         $input = array_intersect_key($input, array_flip($allowedFields));
@@ -509,6 +509,13 @@ try {
     }
 
     // ===== CONTACT COMMUNICATION ENDPOINTS =====
+
+    // Route: GET /contact_communication - Bulk read of all channels (used by lw002)
+    if ($method === 'GET' && $path === 'contact_communication') {
+        $result = $db->getAll('contact_communication');
+        echo json_encode($result);
+        exit();
+    }
 
     // Route: GET /contacts/:id/communication - Get all communication channels for a contact
     if ($method === 'GET' && $segments[0] === 'contacts' && isset($segments[1]) && isset($segments[2]) && $segments[2] === 'communication') {
@@ -601,6 +608,44 @@ try {
                 if (!$input) {
                     http_response_code(400);
                     echo json_encode(['error' => 'No data provided']);
+                    exit();
+                }
+                // categorization is a pure join table: re-linking the same
+                // (entityType, entityId, categoryId) must be idempotent, not a
+                // 500 — even under concurrent double-submits. Pre-check for the
+                // common case, then catch the unique-key race atomically.
+                if ($entity === 'categorization') {
+                    $conn = $db->getConnection();
+                    $entityType = $input['entityType'] ?? '';
+                    $entityId = $input['entityId'] ?? '';
+                    $categoryId = $input['categoryId'] ?? '';
+                    // Match the actual unique constraint: entity type + entity + category.
+                    $findExisting = function () use ($conn, $entityType, $entityId, $categoryId) {
+                        $check = $conn->prepare(
+                            "SELECT * FROM categorization WHERE entityType = ? AND entityId = ? AND categoryId = ? LIMIT 1"
+                        );
+                        $check->execute([$entityType, $entityId, $categoryId]);
+                        return $check->fetch(PDO::FETCH_ASSOC);
+                    };
+                    $returnExisting = function ($row) {
+                        http_response_code(200);
+                        echo json_encode($row);
+                        exit();
+                    };
+                    $existing = $findExisting();
+                    if ($existing) {
+                        $returnExisting($existing);
+                    }
+                    try {
+                        $result = $db->insert($entity, $input);
+                    } catch (PDOException $e) {
+                        if ($e->getCode() === '23000' && ($existing = $findExisting())) {
+                            $returnExisting($existing);
+                        }
+                        throw $e;
+                    }
+                    http_response_code(201);
+                    echo json_encode($result);
                     exit();
                 }
                 $result = $db->insert($entity, $input);

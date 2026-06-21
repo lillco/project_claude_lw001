@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from 'react'
 import { Edit, Trash2, Search } from 'lucide-react'
+import { contactHasCategory } from '../../utils/contactCategories'
 
-function ContactsTable({ contacts, contactType, onEdit, onDelete, onRowClick, showSearch = true }) {
+function ContactsTable({ contacts, categoryId, categoryMap = new Map(), onEdit, onDelete, onRowClick, showSearch = true }) {
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Filter contacts by type and search term
+  // Filter contacts by their categorization (entityType 'contact') under the
+  // tab's "Kontakttyp" category, plus search term
   const filteredContacts = useMemo(() => {
     return contacts
-      .filter(contact => contact.contact_type === contactType)
+      .filter(contact => contactHasCategory(categoryMap, contact.id, categoryId))
       .filter(contact => {
         if (!searchTerm) return true
         const search = searchTerm.toLowerCase()
@@ -18,7 +20,7 @@ function ContactsTable({ contacts, contactType, onEdit, onDelete, onRowClick, sh
           contact.status?.toLowerCase().includes(search)
         )
       })
-  }, [contacts, contactType, searchTerm])
+  }, [contacts, categoryId, categoryMap, searchTerm])
 
   const getStatusBadge = (status) => {
     const statusColors = {

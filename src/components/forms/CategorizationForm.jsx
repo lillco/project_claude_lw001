@@ -6,6 +6,7 @@ function CategorizationForm({
   categorizations,
   categories,
   association,
+  contacts = [],
   onSave,
   onCancel,
   viewMode,
@@ -38,6 +39,27 @@ function CategorizationForm({
     })
   }, [categorization, categorizations, association])
 
+  const handleEntityTypeChange = (entityType) => {
+    setFormData(prev => ({
+      ...prev,
+      entityType,
+      entityId: entityType === 'association' ? (association?.id || '') : '',
+      selectedCategories: []
+    }))
+  }
+
+  const handleEntityIdChange = (entityId) => {
+    // Preselect the entity's existing categorizations so saving extends instead of surprises
+    const entityCats = categorizations.filter(
+      item => item.entityType === 'contact' && item.entityId === entityId
+    )
+    setFormData(prev => ({
+      ...prev,
+      entityId,
+      selectedCategories: entityCats.map(item => item.categoryId)
+    }))
+  }
+
   const handleCategoryToggle = (categoryId) => {
     setFormData(prev => ({
       ...prev,
@@ -47,11 +69,15 @@ function CategorizationForm({
     }))
   }
 
+  const isAssociation = formData.entityType === 'association'
+  const entityMissing = isAssociation ? !association?.id : !formData.entityId
+  const selectedContact = contacts.find(c => c.id === formData.entityId)
+
   const handleSubmit = (event) => {
     event.preventDefault()
 
-    if (!association?.id) {
-      alert('Bitte zuerst einen Verein anlegen.')
+    if (entityMissing) {
+      alert(isAssociation ? 'Bitte zuerst einen Verein anlegen.' : 'Bitte einen Kontakt auswählen.')
       return
     }
 
@@ -61,8 +87,8 @@ function CategorizationForm({
     }
 
     onSave({
-      entityType: 'association',
-      entityId: association.id,
+      entityType: formData.entityType,
+      entityId: formData.entityId,
       categoryIds: formData.selectedCategories
     })
   }
@@ -73,7 +99,7 @@ function CategorizationForm({
         {categorization ? (viewMode ? 'Kategorisierung anzeigen' : 'Kategorisierung bearbeiten') : 'Neue Kategorisierung'}
       </h3>
 
-      {!association?.id && (
+      {isAssociation && !association?.id && (
         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300 rounded">
           Bitte zuerst den Verein speichern, bevor eine Kategorisierung angelegt wird.
         </div>
@@ -85,26 +111,51 @@ function CategorizationForm({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Entitaet
             </label>
-            <input
-              type="text"
-              value="Verein"
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            />
+            <select
+              value={formData.entityType}
+              onChange={(e) => handleEntityTypeChange(e.target.value)}
+              disabled={viewMode || !!categorization}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+            >
+              <option value="association">Verein</option>
+              <option value="contact">Kontakt</option>
+            </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Name
             </label>
-            <input
-              type="text"
-              value={association?.name || '-'}
-              disabled
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-            />
+            {isAssociation ? (
+              <input
+                type="text"
+                value={association?.name || '-'}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              />
+            ) : (
+              <select
+                value={formData.entityId}
+                onChange={(e) => handleEntityIdChange(e.target.value)}
+                disabled={viewMode || !!categorization}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-700"
+              >
+                <option value="">Kontakt auswählen...</option>
+                {contacts.map(contact => (
+                  <option key={contact.id} value={contact.id}>
+                    {contact.company_name}{contact.city ? ` · ${contact.city}` : ''}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
+
+        {!isAssociation && selectedContact && selectedContact.city && (
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            {selectedContact.city}
+          </p>
+        )}
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -124,7 +175,7 @@ function CategorizationForm({
                   type="checkbox"
                   checked={formData.selectedCategories.includes(category.id)}
                   onChange={() => handleCategoryToggle(category.id)}
-                  disabled={viewMode || !association?.id}
+                  disabled={viewMode || entityMissing}
                   className="mr-2"
                 />
                 <span className="text-sm">{category.name}</span>
@@ -142,7 +193,7 @@ function CategorizationForm({
           {!viewMode && (
             <button
               type="submit"
-              disabled={!association?.id}
+              disabled={entityMissing}
               className="bg-[#BAF0DB] text-black border border-black/20 px-6 py-3 rounded shadow-md hover:bg-[#a8dec9] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold transition-colors"
             >
               <Save className="w-5 h-5" />
@@ -174,4 +225,3 @@ function CategorizationForm({
 }
 
 export default CategorizationForm
-

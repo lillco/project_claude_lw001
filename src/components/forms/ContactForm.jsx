@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Save, X } from 'lucide-react'
 import CommunicationChannelsTable from '../tables/CommunicationChannelsTable'
+import { contactsAPI } from '../../api/contacts'
+import { KONTAKTTYP_TYPE_ID, applicableTo } from '../../utils/contactCategories'
 
-function ContactForm({ contact, contactType, categories, onSave, onCancel, viewMode, onChangeToEdit }) {
+function ContactForm({ contact, defaultCategoryId, categoryTypes = [], contactCategorizations = [], categories, onSave, onCancel, viewMode, onChangeToEdit }) {
   const [formData, setFormData] = useState({
-    contact_type: contactType,
     location_category_id: '',
     status: 'active',
     entry_date: '',
@@ -20,11 +21,43 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
   })
 
   const [communicationChannels, setCommunicationChannels] = useState([])
+  const [submitting, setSubmitting] = useState(false)
+
+  // Kategorisierung (n:m): nur die für Kontakte anwendbaren Kategorietypen.
+  // Der Typ "Kontakttyp" bestimmt die Reiter-Zugehörigkeit (Mitglied/
+  // Einzelhandel/Marktbeschicker/Organ).
+  const contactCategoryTypes = (categoryTypes || []).filter(t => applicableTo(t.applicableEntities, 'contact'))
+  const contactCategoryTypeIds = new Set(contactCategoryTypes.map(t => t.id))
+  const manageableCategories = (categories || []).filter(c => contactCategoryTypeIds.has(c.typeId))
+  const kontakttypCategoryIds = new Set(
+    manageableCategories.filter(c => c.typeId === KONTAKTTYP_TYPE_ID).map(c => c.id)
+  )
+
+  // vorbelegt aus den bestehenden Kontakt-Kategorisierungen; beim Anlegen mit
+  // der Kategorie des aktiven Reiters
+  const initialSelectedIds = (contactCategorizations || []).map(c => c.categoryId)
+  const selectedKey = initialSelectedIds.slice().sort().join(',')
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState(
+    initialSelectedIds.length ? initialSelectedIds : (defaultCategoryId ? [defaultCategoryId] : [])
+  )
+
+  useEffect(() => {
+    const base = initialSelectedIds.length
+      ? initialSelectedIds
+      : (defaultCategoryId ? [defaultCategoryId] : [])
+    setSelectedCategoryIds(base)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contact?.id, selectedKey, defaultCategoryId])
+
+  const toggleCategory = (categoryId) => {
+    setSelectedCategoryIds(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
+    )
+  }
 
   useEffect(() => {
     if (contact) {
       setFormData({
-        contact_type: contact.contact_type || contactType,
         location_category_id: contact.location_category_id || '',
         status: contact.status || 'active',
         entry_date: contact.entry_date || '',
@@ -38,12 +71,24 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
         alt_zip: contact.alt_zip || '',
         alt_city: contact.alt_city || ''
       })
-      // TODO: Load communication channels from API
+      // Load existing communication channels; saving replaces all channels,
+      // so an empty list here would silently delete them
+      let cancelled = false
       setCommunicationChannels([])
-    } else {
-      setFormData(prev => ({ ...prev, contact_type: contactType }))
+      contactsAPI.getCommunication(contact.id)
+        .then(channels => {
+          if (cancelled || !Array.isArray(channels)) return
+          setCommunicationChannels(channels.map(ch => ({
+            ...ch,
+            is_primary: Boolean(ch.is_primary)
+          })))
+        })
+        .catch(err => {
+          console.error('Failed to load communication channels:', err)
+        })
+      return () => { cancelled = true }
     }
-  }, [contact, contactType])
+  }, [contact])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -86,30 +131,86 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
     setCommunicationChannels(prev => prev.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSave({
-      ...formData,
-      communicationChannels
-    })
-  }
-
-  // Filter location categories
-  const locationCategories = categories.filter(cat => 
-    cat.typeName === 'Lage' || cat.typeId?.includes('lage')
-  )
-
-  const getContactTypeLabel = () => {
-    switch (contactType) {
-      case 'organ': return 'Organ'
-      case 'member': return 'Mitglied'
-      case 'retailer': return 'Einzelhändler'
-      default: return 'Kontakt'
+    if (submitting) return
+    // Mindestens eine "Kontakttyp"-Kategorie, sonst taucht der Kontakt in
+    // keinem Reiter auf
+    const hasKontakttyp = selectedCategoryIds.some(id => kontakttypCategoryIds.has(id))
+    if (!hasKontakttyp) {
+      alert('Bitte mindestens eine Kontakttyp-Kategorie auswählen (z. B. Mitglied, Einzelhandel, Marktbeschicker, Organ).')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await onSave({
+        ...formData,
+        categoryIds: selectedCategoryIds,
+        communicationChannels
+      })
+    } finally {
+      setSubmitting(false)
     }
   }
 
+  // Filter location categories
+  const locationCategories = categories.filter(cat =>
+    cat.typeName === 'Lage' || cat.typeId?.includes('lage')
+  )
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Kategorisierung (inkl. Rollen über den Typ "Kontakttyp") */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        <h4 className="text-lg font-semibold mb-2 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">
+          Kategorisierung *
+        </h4>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Mehrfachauswahl. Der Typ „Kontakttyp" bestimmt die Rolle(n) — ein Partner
+          kann z.&nbsp;B. zugleich Mitglied und Marktbeschicker sein.
+        </p>
+        {contactCategoryTypes.length === 0 ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Keine für Kontakte anwendbaren Kategorietypen vorhanden.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {contactCategoryTypes.map(type => {
+              const cats = manageableCategories.filter(c => c.typeId === type.id)
+              if (cats.length === 0) return null
+              return (
+                <div key={type.id}>
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {type.name}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {cats.map(cat => (
+                      <label
+                        key={cat.id}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md border cursor-pointer select-none text-sm ${
+                          selectedCategoryIds.includes(cat.id)
+                            ? 'bg-[#BAF0DB] border-black/20 text-black'
+                            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                        } ${viewMode ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedCategoryIds.includes(cat.id)}
+                          onChange={() => toggleCategory(cat.id)}
+                          disabled={viewMode}
+                          className="accent-green-600"
+                        />
+                        {cat.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Stammdaten */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2">Stammdaten</h4>
@@ -330,6 +431,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
         {viewMode ? (
           <>
             <button
+              key="view-close"
               type="button"
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -337,6 +439,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               Schließen
             </button>
             <button
+              key="view-edit"
               type="button"
               onClick={onChangeToEdit}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -347,6 +450,7 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
         ) : (
           <>
             <button
+              key="edit-cancel"
               type="button"
               onClick={onCancel}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
@@ -355,11 +459,13 @@ function ContactForm({ contact, contactType, categories, onSave, onCancel, viewM
               Abbrechen
             </button>
             <button
+              key="edit-submit"
               type="submit"
-              className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2"
+              disabled={submitting}
+              className="px-4 py-2 bg-[#BAF0DB] text-black border border-black/20 rounded-md hover:bg-[#a8dec9] flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              {contact ? 'Aktualisieren' : 'Erstellen'}
+              {submitting ? 'Speichert…' : (contact ? 'Aktualisieren' : 'Erstellen')}
             </button>
           </>
         )}

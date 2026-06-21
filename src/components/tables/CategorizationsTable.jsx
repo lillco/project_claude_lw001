@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { Edit, Trash2 } from 'lucide-react'
 
-function CategorizationsTable({ categorizations, categories, association, onEdit, onDelete, onRowClick, showSearch = false }) {
+function CategorizationsTable({ categorizations, categories, association, contacts = [], onEdit, onDelete, onRowClick, showSearch = false }) {
   const [searchFields, setSearchFields] = useState({
     entityName: '',
     categoryType: '',
@@ -19,10 +19,17 @@ function CategorizationsTable({ categorizations, categories, association, onEdit
 
       const key = `${item.entityType}-${item.entityId}`
       if (!grouped[key]) {
+        let entityName = 'Unbekannt'
+        if (item.entityType === 'association' && association && item.entityId === association.id) {
+          entityName = association.name
+        } else if (item.entityType === 'contact') {
+          const contact = contacts.find(c => c.id === item.entityId)
+          entityName = contact?.company_name || 'Unbekannt'
+        }
         grouped[key] = {
           entityType: item.entityType,
           entityId: item.entityId,
-          entityName: association && item.entityId === association.id ? association.name : 'Unbekannt',
+          entityName,
           categories: [],
           categoryTypes: [],
           ids: []
@@ -36,7 +43,7 @@ function CategorizationsTable({ categorizations, categories, association, onEdit
     })
 
     return Object.values(grouped)
-  }, [categorizations, categories, association])
+  }, [categorizations, categories, association, contacts])
 
   const filteredData = useMemo(() => {
     return groupedCategorizations.filter((item) => {
@@ -124,8 +131,12 @@ function CategorizationsTable({ categorizations, categories, association, onEdit
               onClick={() => onRowClick(item.ids[0])}
             >
               <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                <span className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                  Verein
+                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                  item.entityType === 'contact'
+                    ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                }`}>
+                  {item.entityType === 'contact' ? 'Kontakt' : 'Verein'}
                 </span>
               </td>
               <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">

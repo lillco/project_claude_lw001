@@ -13,7 +13,7 @@ const isProduction = window.location.protocol === 'https:' ||
 // API base URL
 const API_BASE_URL = isProduction
   ? '/association/api/index.php'  // Production: PHP backend in /association/ subdirectory
-  : 'http://localhost:3000/api'  // Development: Node.js backend
+  : 'http://localhost:3002/api'  // Development: Node.js backend (port 3002, see src/db/local.js)
 
 /**
  * Generic API request handler

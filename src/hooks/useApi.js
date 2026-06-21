@@ -156,7 +156,21 @@ export function useApi() {
   const addCategorization = useCallback(async (data) => {
     try {
       const created = await categorizationAPI.create(data)
-      setCategorizations(prev => [...prev, created])
+      setCategorizations(prev => {
+        const index = prev.findIndex(item =>
+          item.id === created.id ||
+          (
+            item.entityType === created.entityType &&
+            item.entityId === created.entityId &&
+            item.categoryId === created.categoryId
+          )
+        )
+        if (index === -1) return [...prev, created]
+
+        const next = [...prev]
+        next[index] = created
+        return next
+      })
       return created
     } catch (err) {
       setError(err.message)
