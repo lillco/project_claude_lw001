@@ -127,6 +127,7 @@ class Database {
                 id VARCHAR(50) PRIMARY KEY,
                 typeId VARCHAR(50) NOT NULL,
                 name VARCHAR(255) NOT NULL,
+                pricingCode VARCHAR(50) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (typeId) REFERENCES category_types(id) ON DELETE CASCADE
             )

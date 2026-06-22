@@ -94,6 +94,7 @@ class DatabaseLayer {
           name VARCHAR(255) NOT NULL,
           typeId VARCHAR(50),
           description TEXT,
+          pricingCode VARCHAR(50),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (typeId) REFERENCES category_types(id) ON DELETE SET NULL
         )
